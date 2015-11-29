@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  div(ng-controller='IndexController as ctrl' layout='column' style='height:100%')
+    md-toolbar
+      div(class='md-toolbar-tools')
+        md-button(class='md-icon-button' ng-click='ctrl.toggleSidePane()' aria-label='Settings')
+          md-icon(md-font-set='material-icons') menu
+        span #{title}
+        span(flex)
+        md-button(class='md-icon-button' aria-label='Add')
+          md-icon(md-font-set='material-icons') add
+    md-content(flex)
+      md-sidenav(class='md-sidenav-left md-whiteframe-z2' md-component-id='left')
+        h1 SURPRISE!
+        |  NOTHING!!
+      div(style='margin: 10px;')
+        h1= title
+        p Welcome to #{title}
+        p The text is {{ctrl.text}}
+        input(type='text' ng-model='ctrl.text' name='Test')
+        section(layout='row' layout-align='center center' layout-wrap)
+          md-button(class='md-raised') OtherButton
