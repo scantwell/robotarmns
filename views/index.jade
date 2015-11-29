@@ -20,4 +20,11 @@ block content
         p The text is {{ctrl.text}}
         input(type='text' ng-model='ctrl.text' name='Test')
         section(layout='row' layout-align='center center' layout-wrap)
-          md-button(class='md-raised') OtherButton
+          md-button(class='md-icon-button' aria-label='Move Forward')
+            md-icon(md-font-set='material-icons') arrow upward
+          md-button(class='md-icon-button' aria-label='Move Backward')
+            md-icon(md-font-set='material-icons') arrow downward
+          md-button(class='md-icon-button' aria-label='Turn Left')
+            md-icon(md-font-set='material-icons') arrow back
+          md-button(class='md-icon-button' aria-label='Turn Right')
+            md-icon(md-font-set='material-icons') arrow forward
