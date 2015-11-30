@@ -27,7 +27,7 @@ module RobotArm {
         }
 
         public moveForward() {
-            /* WIP - Loading Overaly */
+            /* WIP - Loading Overaly
             this.mdDialog.show({
                 templateUrl: '/templates/loadingOverlay.html',
                 parent: angular.element(document.body),
@@ -36,6 +36,7 @@ module RobotArm {
             this.timeout(() => {
                 this.mdDialog.hide();
             }, 1000);
+            */
 
             this.http.post('/api/moveforward', {value: 50}
             ).then((success) => {
@@ -44,6 +45,7 @@ module RobotArm {
                 });
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -52,6 +54,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -60,6 +63,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -68,6 +72,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -76,6 +81,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -84,6 +90,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -92,6 +99,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }
@@ -100,6 +108,7 @@ module RobotArm {
             ).then((success) => {
                 console.log(success);
             }, (error) => {
+                this.status = 'error';
                 console.log(error);
             });
         }

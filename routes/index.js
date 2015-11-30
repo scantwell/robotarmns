@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Robot Arm Control' });
+  res.render('index', { title: 'Robot Arm Controller' });
 });
 
 module.exports = router;

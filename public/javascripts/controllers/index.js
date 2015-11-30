@@ -21,71 +21,87 @@ var RobotArm;
             });
         };
         IndexController.prototype.moveForward = function () {
-            var _this = this;
-            /* WIP - Loading Overaly */
+            /* WIP - Loading Overaly
             this.mdDialog.show({
                 templateUrl: '/templates/loadingOverlay.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false
             });
-            this.timeout(function () {
-                _this.mdDialog.hide();
+            this.timeout(() => {
+                this.mdDialog.hide();
             }, 1000);
+            */
+            var _this = this;
             this.http.post('/api/moveforward', { value: 50 }).then(function (success) {
                 _this.timeout(function () {
                     _this.mdDialog.hide();
                 });
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.turnLeft = function () {
+            var _this = this;
             this.http.post('/api/turnleft', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.turnRight = function () {
+            var _this = this;
             this.http.post('/api/turnright', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.moveBackward = function () {
+            var _this = this;
             this.http.post('/api/movebackward', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.openClaw = function () {
+            var _this = this;
             this.http.post('/api/openclaw', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.closeClaw = function () {
+            var _this = this;
             this.http.post('/api/closeclaw', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.raiseArm = function () {
+            var _this = this;
             this.http.post('/api/raisearm', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
         IndexController.prototype.lowerArm = function () {
+            var _this = this;
             this.http.post('/api/lowerarm', { value: 50 }).then(function (success) {
                 console.log(success);
             }, function (error) {
+                _this.status = 'error';
                 console.log(error);
             });
         };
