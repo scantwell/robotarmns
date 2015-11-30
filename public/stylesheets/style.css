@@ -5,4 +5,7 @@ body {
 a {
   color: #00B7FF; }
 
+button.md-icon-button.md-dbl-icon-button md-icon:nth-last-of-type(1) {
+  margin-left: -10px; }
+
 /*# sourceMappingURL=style.css.map */
