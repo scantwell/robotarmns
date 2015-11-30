@@ -5,13 +5,22 @@
 var RobotArm;
 (function (RobotArm) {
     var IndexController = (function () {
-        function IndexController(mdSideNav, http, mdDialog, timeout) {
+        function IndexController(mdSideNav, http, mdDialog, timeout, interval) {
+            var _this = this;
             this.mdSideNav = mdSideNav;
             this.http = http;
             this.mdDialog = mdDialog;
             this.timeout = timeout;
+            this.interval = interval;
             this.status = 'boot';
-            this.status = "connected";
+            // Setup Ping Service
+            this.interval(function () {
+                _this.http.get('/api/ping').then(function () {
+                    _this.status = "connected";
+                }, function () {
+                    _this.status = "disconnected";
+                });
+            }, 5000);
         }
         IndexController.prototype.toggleSidePane = function () {
             this.mdSideNav('left')
@@ -106,7 +115,7 @@ var RobotArm;
             });
         };
         //noinspection JSUnusedGlobalSymbols
-        IndexController.$inject = ['$mdSidenav', '$http', '$mdDialog', '$timeout'];
+        IndexController.$inject = ['$mdSidenav', '$http', '$mdDialog', '$timeout', '$interval'];
         return IndexController;
     })();
     RobotArm.IndexController = IndexController;

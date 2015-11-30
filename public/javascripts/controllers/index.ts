@@ -9,13 +9,22 @@ module RobotArm {
         public status: string = 'boot';
 
         //noinspection JSUnusedGlobalSymbols
-        public static $inject = ['$mdSidenav', '$http', '$mdDialog', '$timeout'];
+        public static $inject = ['$mdSidenav', '$http', '$mdDialog', '$timeout', '$interval'];
 
         constructor(private mdSideNav: any,
                     private http: ng.IHttpService,
                     private mdDialog: any,
-                    private timeout: ng.ITimeoutService) {
-            this.status = "connected"
+                    private timeout: ng.ITimeoutService,
+                    private interval: ng.IIntervalService) {
+            // Setup Ping Service
+            this.interval(() => {
+                this.http.get('/api/ping'
+                ).then(() => {
+                    this.status = "connected";
+                }, () => {
+                    this.status = "disconnected";
+                });
+            }, 5000);
         }
 
         public toggleSidePane() {

@@ -42,7 +42,7 @@ router.post('/openclaw', function(req, res) {
 });
 
 router.post('/closeclaw', function(req, res) {
-  res.send('success');
+  res.status(500).send('failure');
 });
 
 router.post('/raisearm', function(req, res) {
