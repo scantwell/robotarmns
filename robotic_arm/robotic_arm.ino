@@ -1,21 +1,45 @@
 // Robotic Arm Arduino Code
 // 11/10/15
+/*
+rotate(float degrees, int direction)
+
+
+// protocol
+
+1 = FORWARD
+2 = BACKWARD
+3 = LEFT
+4 = RIGHT
+
+degrees = 0 - 360
+
+// DISTANCE FUNCTIONS
+1 = move(int direction, float cm)
+2 = rotate(int direction, float degrees)
+3 = arm_to(float cm)
+4 = claw_to(float cm)
+
+*/
+
 
 #include <Servo.h> 
 const int BUFFER_SIZE = 256;
 
+// open 10.5 cm
+// closed 0 cm
+// arm distance
 Servo pincer;
 const int PINCER_MAX = 103;
 const int PINCER_MIN = 0;
 
-Servo arm;
-const int ARM_MAX = 100;
-const int ARM_MIN = 5;
+Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
+const int ARM_MAX = 101; //4.2 cm 
+const int ARM_MIN = 5; // 31.3 cm
 
 Servo left_wheel;
 const int LEFT_WHEEL_FORWARD = 135;
 const int LEFT_WHEEL_BACKWARD = 45;
-
+      
 Servo right_wheel;
 const int RIGHT_WHEEL_FORWARD = 45;
 const int RIGHT_WHEEL_BACKWARD = 135;
@@ -60,9 +84,10 @@ void setup()
 
 
   // Write Starting Values
-  pincer.write(95);
+  // 40
+  pincer.write(103);
   pincer_value = 95;
-  arm.write(95);  
+  arm.write(103);  
   arm_value = 95;
   left_wheel.write(90);
   right_wheel.write(90);
@@ -76,6 +101,8 @@ void loop()
   while(Serial.available() < 8) ;
   command = readULongFromBytes();
   value = readULongFromBytes();
+  Serial.print(command);
+  Serial.print(value);
   
   switch(command) {
    case 0:
@@ -226,3 +253,10 @@ int turn_right(int ms)
   left_wheel.write(90);  
   return 0;
 }
+
+int cm_to_servo(float cm)
+{
+  float rv_per_cm = 3.542435;
+  return round(rv_per_cm * cm + 9.868);
+}
+
