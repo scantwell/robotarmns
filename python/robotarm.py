@@ -27,9 +27,11 @@ def main():
     robot = serial.Serial(tty, 9600, timeout=5)
 
     try:
-        robot.open()
+        exit_code = 1
         cmd = args.command
         val = args.value
+
+        robot.open()
 
         # Command Switch
 
