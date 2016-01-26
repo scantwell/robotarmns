@@ -4,8 +4,12 @@ import argparse
 import serial
 import struct
 import sys
+import platform
 
 tty = '/dev/ttyUSB0'
+
+if platform.system() == 'Darwin':
+	tty = '/dev/ttys002'
 
 # Commands
 CLAW = 0
@@ -23,7 +27,8 @@ def main():
     try:
         robot = serial.Serial(tty, 9600, timeout=5)
         robot.open()
-    except:
+    except serial.SerialException as e:
+        print e
         sys.exit(1)
     else:
         cmd = args.command
