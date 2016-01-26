@@ -24,13 +24,10 @@ def main():
     args = parse_arguments()
 
     # noinspection PyBroadException
+    robot = serial.Serial(tty, 9600, timeout=5)
+
     try:
-        robot = serial.Serial(tty, 9600, timeout=5)
         robot.open()
-    except serial.SerialException as e:
-        print e
-        sys.exit(1)
-    else:
         cmd = args.command
         val = args.value
 
@@ -54,9 +51,13 @@ def main():
         elif cmd == 'arm':
             run_command(robot, ARM, val)
         else:
-            sys.exit(2)
-        sys.exit(0)
+            exit_code = 2 //sys.exit(2)
 
+    except serial.SerialException as e:
+        print e
+    finally:
+        robot.close()
+        sys.exit(exit_code)
 
 def run_command(robot, command, value):
     robot.write(struct.pack('I', command))
