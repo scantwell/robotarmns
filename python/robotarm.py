@@ -27,7 +27,7 @@ def main():
     robot = serial.Serial(tty, 9600, timeout=5)
 
     try:
-        exit_code = 1
+        exit_code = 0
         cmd = args.command
         val = args.value
 
