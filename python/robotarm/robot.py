@@ -8,17 +8,16 @@ class Robot(object):
     LEFT = 3
     RIGHT = 4
 
-    def __init__(self, device):
+    def __init__(self, device='/dev/tty.usbmodem1411'):
         self._connection = RobotSerial(device, baudrate=9600)
-        self._connection.close()
-        self._connection.open()
+        self.disconnect()
+        self.connect()
 
     def arm_to(self, cm):
         '''Move the arm to the given centimeters above the ground.
         params cm: Centimeters from the ground to center of the claw.'''
         assert isinstance(cm, float) or isinstance(cm, int), "Invalid centimeters"
         command = Arm(cm)
-        command.commandId = 1
         self._connection.sendCommand(command)
 
     def claw_to(self, cm):
@@ -27,6 +26,9 @@ class Robot(object):
         assert isinstance(cm, float) or isinstance(cm, int), "Invalid centimeters"
         command = Claw(cm)
         self._connection.sendCommand(command)
+
+    def connect(self):
+        self._connection.open();
 
     def disconnect(self):
         self._connection.close()
@@ -49,7 +51,7 @@ class Robot(object):
 
         if not (direction == Robot.LEFT or direction == Robot.RIGHT):
             raise RuntimeError("Turning direction is not recognized.")
-        if not (degrees < 0 or degrees > 360):
+        if degrees < 0 or degrees > 360:
             raise RuntimeError("Invalid degrees.")
 
         command = Rotate(direction, degrees)

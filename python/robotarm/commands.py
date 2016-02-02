@@ -32,6 +32,7 @@ class Claw(_Command):
         assert isinstance(centimeters, int) or isinstance(centimeters, float), "Centimeters must be integer or float value."
         super(Claw, self).__init__("Claw")
         self.centimeters = centimeters
+        self.length = 10
 
 class Move(_Command):
     def __init__(self, direction, centimeters):
@@ -40,6 +41,7 @@ class Move(_Command):
         super(Move, self).__init__("Move")
         self.direction = direction
         self.centimeters = centimeters
+        self.length = 10
 
 # Should there be a direction or should it be dictated whether the number is negative
 class Rotate(_Command):
@@ -49,6 +51,7 @@ class Rotate(_Command):
         super(Rotate, self).__init__("Rotate")
         self.direction = direction
         self.degrees = degrees
+        self.length = 10
 
 
 

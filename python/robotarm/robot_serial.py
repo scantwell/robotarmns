@@ -1,6 +1,7 @@
 from serial import Serial
-from construct import Struct, ULInt8, ULInt16
+from construct import Struct, ULInt8, ULInt16, PascalString
 from commands import Arm, Claw, Move, Rotate
+from time import sleep
 
 _armProtocol = Struct("ArmProtocol",
     ULInt8("commandId"),
@@ -36,6 +37,9 @@ _rotateProtocol = Struct("RotateProtocol",
     #ULInt8("footer")
     )
 
+_robotResponse = Struct("RobotResponse",
+                        PascalString("describe", length_field = ULInt8("length"))
+                        )
 
 class RobotSerial(Serial):
     def __init__(self,
@@ -75,6 +79,15 @@ class RobotSerial(Serial):
             buf = _moveProtocol.build(command)
         elif isinstance(command, Rotate):
             buf = _rotateProtocol.build(command)
-        if buf is not None:
+        if buf is None:
             raise RuntimeError("Unrecognized command.")
         self.write(buf)
+        self.readCommand()
+
+    def readCommand(self):
+        sleep(3)
+        print "READING COMMAND"
+        response = ""
+        while super(RobotSerial, self).inWaiting() != 0:
+            response += self.read()
+        print response
