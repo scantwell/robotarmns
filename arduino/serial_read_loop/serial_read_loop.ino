@@ -106,7 +106,7 @@ void loop() {
         armCommand.cmd_length = (int)Serial.read();
         armCommand.centimeters = readInt();
         arm_to(armCommand);
-        what = "Moved Arm " + (String)armCommand.centimeters + "cm.";
+        what = "Moved Arm " + (String)armCommand.centimeters + " cm.";
         break;
       case 2: // Claw Command
         ClawCommand clawCommand;
@@ -114,7 +114,7 @@ void loop() {
         clawCommand.cmd_length = (int)Serial.read();
         clawCommand.centimeters = readInt();
         claw_to(clawCommand);
-        what = "Moved Claw " + (String)clawCommand.centimeters + "cm.";
+        what = "Moved Claw " + (String)clawCommand.centimeters + " cm.";
         break;
       case 3: // Move Command
         MoveCommand moveCommand;
@@ -138,7 +138,7 @@ void loop() {
         rotCommand.rot_degrees = readInt();
         rotate(rotCommand);
         dir = "left.";
-        if (moveCommand.dir == 4)
+        if (rotCommand.dir == 4)
         {
           dir = "right."; 
         }

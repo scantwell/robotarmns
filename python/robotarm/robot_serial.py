@@ -69,25 +69,23 @@ class RobotSerial(Serial):
             inter_byte_timeout=inter_byte_timeout,
             **kwargs)
 
-    def sendCommand(self, command):
-        buf = None
-        if isinstance(command, Arm):
-            buf = _armProtocol.build(command)
-        elif isinstance(command, Claw):
-            buf = _clawProtocol.build(command)
-        elif isinstance(command, Move):
-            buf = _moveProtocol.build(command)
-        elif isinstance(command, Rotate):
-            buf = _rotateProtocol.build(command)
-        if buf is None:
-            raise RuntimeError("Unrecognized command.")
-        self.write(buf)
+    def write(self, obj):
+        buf = obj
+        if isinstance(obj, Arm):
+            buf = _armProtocol.build(obj)
+        elif isinstance(obj, Claw):
+            buf = _clawProtocol.build(obj)
+        elif isinstance(obj, Move):
+            buf = _moveProtocol.build(obj)
+        elif isinstance(obj, Rotate):
+            buf = _rotateProtocol.build(obj)
+        super(RobotSerial, self).write(buf)
         self.readCommand()
 
     def readCommand(self):
         sleep(3)
-        print "READING COMMAND"
         response = ""
         while super(RobotSerial, self).inWaiting() != 0:
             response += self.read()
-        print response
+        if response != "":
+            print "RESPONSE: {}".format(response[2:])

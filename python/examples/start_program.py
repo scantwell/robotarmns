@@ -1,12 +1,16 @@
 import argparse
-from robotarm.robot import Robot
+from robotarm import Robot
 from time import sleep
 
 def run(options):
 	robot = Robot(options.tty)
-	sleep(2)
+	robot.connect()
 	robot.arm_to(10)
-	sleep(2)
+	robot.claw_to(20)
+	robot.rotate(Robot.RIGHT, 360)
+	robot.rotate(Robot.LEFT, 360)
+	robot.move(Robot.FORWARD, 5)
+	robot.move(Robot.BACKWARD, 5)
 	robot.disconnect()
 
 if __name__ == "__main__":
