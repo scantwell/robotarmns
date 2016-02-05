@@ -3,10 +3,35 @@
 // int - 16 bits 2 bytes
 // long - 32 bits 4 bytes
 
+#include <Servo.h>
+#include <Math.h>
+
+Servo pincer;
+const int PINCER_MAX = 103;
+const int PINCER_MIN = 0;
+
+Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
+const int ARM_MAX = 101; //4.2 cm 
+const int ARM_MIN = 5; // 31.3 cm
+
+//wheel diameters = 7.4 cm
+//wheel c = 23.25cm 
+//1 Revolution = 1.820 Seconds
+//ms/cm = 78.2795
+Servo left_wheel;
+const int LEFT_WHEEL_FORWARD = 135;
+const int LEFT_WHEEL_BACKWARD = 45;
+      
+Servo right_wheel;
+const int RIGHT_WHEEL_FORWARD = 45;
+const int RIGHT_WHEEL_BACKWARD = 135;
+
+const int WHEEL_STOP = 90;
+
 union robot_int
 {
   unsigned int value;
-  byte bytes[2];
+  byte bytes[2];  
 };
 
 struct ArmCommand
@@ -64,12 +89,33 @@ void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  
+  // Init Pincer
+  // Wire Color: White
+  pincer.attach(6);
+
+  // Init Arm
+  // Wire Color: Green
+  arm.attach(3);
+
+  // Init Left Wheel, range 0 - 180
+  // Wire Color: Yellow
+  left_wheel.attach(9);
+
+  // Init Right Wheel, range 0 - 180
+  // Wire Color: Yellow
+  right_wheel.attach(11);
 }
 
 Response arm_to(ArmCommand command)
 {
   Response resp;
   resp.error = false;
+  resp.errorMessage = move_arm_to(command);
+  if(resp.errorMessage != "")
+  {
+    resp.error = true;
+  }
   resp.describe = "Moved Arm " + (String)command.centimeters + " cm.";
   return resp;
 }
@@ -78,6 +124,11 @@ Response claw_to(ClawCommand command)
 {
   Response resp;
   resp.error = false;
+  resp.errorMessage = move_claw_to(command);
+  if(resp.errorMessage != "")
+  {
+    resp.error = true;
+  }
   resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
   return resp;
 }
@@ -85,7 +136,14 @@ Response claw_to(ClawCommand command)
 Response move_to(MoveCommand command)
 {  
   Response resp;
+  
   resp.error = false;
+  resp.errorMessage = move_robot_to(command);
+  if(resp.errorMessage != "")
+  {
+    resp.error = true;
+  }
+  
   String dir = "forward";
   
   if (command.dir == 2)
@@ -104,6 +162,13 @@ Response rotate(RotateCommand command)
     resp.error = true;
     resp.error_message = "Failed to rotate. Invalid negative degrees.";
   }
+  
+  resp.errorMessage = rotate_robot_to(command);
+  if(resp.errorMessage != "")
+  {
+    resp.error = true;
+  }
+  
   String dir = "left.";
   if (command.dir == 4)
   {
@@ -121,6 +186,66 @@ void sendResponse(Response resp)
   resp.describe.toCharArray(buf, len);
   sprintf(describe, "\\x%02X%s", len, buf);
   Serial.print(describe);
+}
+
+String move_arm_to(ArmCommand command)
+{
+  arm.write(cm_to_arm_servo(command.centimeters));
+  return "";
+}
+
+String move_claw_to(ClawCommand command)
+{
+  
+  return "";  
+}
+
+String move_robot_to(MoveCommand command)
+{
+  int delay_ms = cm_to_move_delay(command.centimeters);
+  if(command.dir = 1)
+  {
+    left_wheel.write(LEFT_WHEEL_FORWARD);
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
+  }
+  else
+  {
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+  }
+  delay(delay_ms);
+  
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
+  
+  return "";  
+}
+
+String rotate_robot_to(RotateCommand command)
+{
+  
+  return "";  
+}
+
+int cm_to_arm_servo(int cm)
+{
+  float rv_per_cm = 3.542435;
+  int servo = round(rv_per_cm * cm + 9.868;
+  if(servo > ARM_MAX)
+  {
+    servo = ARM_MAX;
+  }
+  else if(servo < ARM_MIN)
+  {
+    servo = ARM_MIN;
+  }
+  
+  return servo;
+}
+
+int cm_to_move_delay(int cm)
+{
+  return round(cm * 78.2795);
 }
 
 void loop() {
