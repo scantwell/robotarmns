@@ -1,5 +1,5 @@
 from serial import Serial
-from construct import Struct, ULInt8, ULInt16, PascalString
+from construct import Struct, ULInt8, ULInt16, CString, Flag
 from commands import Arm, Claw, Move, Rotate
 from time import sleep
 
@@ -37,11 +37,14 @@ _rotateProtocol = Struct("RotateProtocol",
     #ULInt8("footer")
     )
 
-#_robotResponse = Struct("RobotResponse",
-#                        PascalString("describe", length_field=ULInt8("length"))
-#                        )
+_robotResponse = Struct("RobotResponse",
+                        ULInt8("command"),
+                        CString("describe"),
+                        Flag("error"),
+                        CString("error_message")
+                        )
 
-_robotResponse = PascalString("describe", length_field=ULInt8("length"))
+#_robotResponse = CString("describe")
 
 class RobotSerial(Serial):
     def __init__(self,
@@ -90,6 +93,5 @@ class RobotSerial(Serial):
         while super(RobotSerial, self).inWaiting() != 0:
             response += self.read()
         if response != "":
-            print type(response)
-            print "RESPONSE:{}".format(response)
-            rv = _robotResponse.parse(response)
+            #print "RESPONSE:{}".format(response)
+            print _robotResponse.parse(response)

@@ -45,6 +45,12 @@ struct Response
   String describe;
   boolean error;
   String error_message;
+  Response() { 
+    command = "0";
+    describe = ""; 
+    error = false;
+    error_message = "";
+  }
 };
 
 int readInt()
@@ -113,14 +119,41 @@ Response rotate(RotateCommand command)
   return resp;
 }
 
+void sendField(String value)
+{
+   int len = value.length();
+  char retval[len];
+  value.toCharArray(retval, len);
+  Serial.write(retval);
+  Serial.write(0x00);
+}
+
+void sendFlag(boolean value)
+{
+  if (value)
+  {
+    Serial.write(0x01);
+  }
+  else
+  {
+    Serial.write(0x00);
+  }
+  Serial.write(0x00);
+}
+
+void sendInt8(int value)
+{
+  robot_int rv;
+  rv.value = value;
+  Serial.write(rv.bytes[0]);
+}
+
 void sendResponse(Response resp)
 {
-  int len = resp.describe.length();
-  char describe[len + 4];
-  char buf[len];
-  resp.describe.toCharArray(buf, len);
-  sprintf(describe, "\\x%02X%s", len, buf);
-  Serial.print(describe);
+  sendField(resp.command);
+  sendField(resp.describe);
+  sendFlag(resp.error);
+  sendField(resp.error_message);
 }
 
 void loop() {
