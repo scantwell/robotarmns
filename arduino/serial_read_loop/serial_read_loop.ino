@@ -117,8 +117,8 @@ Response arm_to(ArmCommand command)
 {
   Response resp;
   resp.error = false;
-  resp.errorMessage = move_arm_to(command);
-  if(resp.errorMessage != "")
+  resp.error_message = move_arm_to(command);
+  if(resp.error_message != "")
   {
     resp.error = true;
   }
@@ -130,8 +130,8 @@ Response claw_to(ClawCommand command)
 {
   Response resp;
   resp.error = false;
-  resp.errorMessage = move_claw_to(command);
-  if(resp.errorMessage != "")
+  resp.error_message = move_claw_to(command);
+  if(resp.error_message != "")
   {
     resp.error = true;
   }
@@ -144,8 +144,8 @@ Response move_to(MoveCommand command)
   Response resp;
   
   resp.error = false;
-  resp.errorMessage = move_robot_to(command);
-  if(resp.errorMessage != "")
+  resp.error_message = move_robot_to(command);
+  if(resp.error_message != "")
   {
     resp.error = true;
   }
@@ -169,8 +169,8 @@ Response rotate(RotateCommand command)
     resp.error_message = "Failed to rotate. Invalid negative degrees.";
   }
   
-  resp.errorMessage = rotate_robot_to(command);
-  if(resp.errorMessage != "")
+  resp.error_message = rotate_robot_to(command);
+  if(resp.error_message != "")
   {
     resp.error = true;
   }
@@ -263,7 +263,7 @@ String rotate_robot_to(RotateCommand command)
 int cm_to_arm_servo(int cm)
 {
   float rv_per_cm = 3.542435;
-  int servo = round(rv_per_cm * cm + 9.868;
+  int servo = round(rv_per_cm * cm + 9.868);
   if(servo > ARM_MAX)
   {
     servo = ARM_MAX;
@@ -329,5 +329,4 @@ void loop() {
     sendResponse(resp);
   } // end of while
   delay(2000);
-  //Serial.println("What hapened? " + what);
 }
