@@ -37,9 +37,11 @@ _rotateProtocol = Struct("RotateProtocol",
     #ULInt8("footer")
     )
 
-_robotResponse = Struct("RobotResponse",
-                        PascalString("describe", length_field = ULInt8("length"))
-                        )
+#_robotResponse = Struct("RobotResponse",
+#                        PascalString("describe", length_field=ULInt8("length"))
+#                        )
+
+_robotResponse = PascalString("describe", length_field=ULInt8("length"))
 
 class RobotSerial(Serial):
     def __init__(self,
@@ -88,4 +90,6 @@ class RobotSerial(Serial):
         while super(RobotSerial, self).inWaiting() != 0:
             response += self.read()
         if response != "":
-            print "RESPONSE: {}".format(response[2:])
+            print type(response)
+            print "RESPONSE:{}".format(response)
+            rv = _robotResponse.parse(response)

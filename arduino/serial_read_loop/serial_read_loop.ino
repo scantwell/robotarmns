@@ -66,30 +66,61 @@ void setup()
   Serial.begin(9600);
 }
 
-void arm_to(ArmCommand command)
+Response arm_to(ArmCommand command)
 {
+  Response resp;
+  resp.error = false;
+  resp.describe = "Moved Arm " + (String)command.centimeters + " cm.";
+  return resp;
 }
 
-void claw_to(ClawCommand command)
-{ 
+Response claw_to(ClawCommand command)
+{
+  Response resp;
+  resp.error = false;
+  resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
+  return resp;
 }
 
-void move_to(MoveCommand command)
-{ 
+Response move_to(MoveCommand command)
+{  
+  Response resp;
+  resp.error = false;
+  String dir = "forward";
+  
+  if (command.dir == 2)
+  {
+    dir = "backward"; 
+  }
+  resp.describe = "Moved Robot " + dir + " " + (String)command.centimeters + " cm." ;
+  return resp;
 }
 
-void rotate(RotateCommand command)
-{ 
+Response rotate(RotateCommand command)
+{
+  Response resp;
+  if (command.rot_degrees < 0)
+  {
+    resp.error = true;
+    resp.error_message = "Failed to rotate. Invalid negative degrees.";
+  }
+  String dir = "left.";
+  if (command.dir == 4)
+  {
+    dir = "right."; 
+  }
+  resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the " + dir;
+  return resp;
 }
 
 void sendResponse(Response resp)
 {
   int len = resp.describe.length();
-  char describe[len];
-
-  resp.describe.toCharArray(describe, len);
-  Serial.print(len, HEX);
-  Serial.write(describe);
+  char describe[len + 4];
+  char buf[len];
+  resp.describe.toCharArray(buf, len);
+  sprintf(describe, "\\x%02X%s", len, buf);
+  Serial.print(describe);
 }
 
 void loop() {
@@ -97,6 +128,7 @@ void loop() {
   {
     String dir;
     header.bytes[0] = Serial.read();
+    Response resp;
     switch(header.value)
     {
       // ARM COMMAND
@@ -105,16 +137,15 @@ void loop() {
         armCommand.id = header.value;
         armCommand.cmd_length = (int)Serial.read();
         armCommand.centimeters = readInt();
-        arm_to(armCommand);
-        what = "Moved Arm " + (String)armCommand.centimeters + " cm.";
+        resp = arm_to(armCommand);
         break;
       case 2: // Claw Command
         ClawCommand clawCommand;
         clawCommand.id = header.value;
         clawCommand.cmd_length = (int)Serial.read();
         clawCommand.centimeters = readInt();
-        claw_to(clawCommand);
-        what = "Moved Claw " + (String)clawCommand.centimeters + " cm.";
+        resp = claw_to(clawCommand);
+        
         break;
       case 3: // Move Command
         MoveCommand moveCommand;
@@ -122,13 +153,7 @@ void loop() {
         moveCommand.cmd_length = (int)Serial.read();
         moveCommand.dir = (int)Serial.read();
         moveCommand.centimeters = readInt();
-        move_to(moveCommand);
-        dir = "forward";
-        if (moveCommand.dir == 2)
-        {
-          dir = "backward"; 
-        }
-        what = "Moved Robot " + dir + " " + (String)moveCommand.centimeters + " cm." ;
+        resp = move_to(moveCommand);
         break;
       case 4: // Rotate Command
         RotateCommand rotCommand;
@@ -136,19 +161,13 @@ void loop() {
         rotCommand.cmd_length = (int)Serial.read();
         rotCommand.dir = (int)Serial.read();
         rotCommand.rot_degrees = readInt();
-        rotate(rotCommand);
-        dir = "left.";
-        if (rotCommand.dir == 4)
-        {
-          dir = "right."; 
-        }
-        what = "Rotated " + (String)rotCommand.rot_degrees + " degrees to the " + dir;
+        resp = rotate(rotCommand);
         break;
       default:
-        what = "Wrong header? " + header.value;
+        resp.error = false;
+        resp.error_message = "Wrong header? " + header.value;
         break;
     } // end of switch
-    resp.describe = what;
     sendResponse(resp);
   } // end of while
   delay(2000);
