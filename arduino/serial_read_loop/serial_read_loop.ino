@@ -4,7 +4,7 @@
 // long - 32 bits 4 bytes
 
 #include <Servo.h>
-#include <Math.h>
+#include <math.h>
 
 Servo pincer;
 const int PINCER_MAX = 103;
@@ -27,6 +27,7 @@ const int RIGHT_WHEEL_FORWARD = 45;
 const int RIGHT_WHEEL_BACKWARD = 135;
 
 const int WHEEL_STOP = 90;
+const int TURNING_RADIUS = 19;
 
 union robot_int
 {
@@ -236,7 +237,7 @@ String move_claw_to(ClawCommand command)
 String move_robot_to(MoveCommand command)
 {
   int delay_ms = cm_to_move_delay(command.centimeters);
-  if(command.dir = 1)
+  if(command.dir == 1)
   {
     left_wheel.write(LEFT_WHEEL_FORWARD);
     right_wheel.write(RIGHT_WHEEL_FORWARD);
@@ -256,6 +257,22 @@ String move_robot_to(MoveCommand command)
 
 String rotate_robot_to(RotateCommand command)
 {
+  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  
+  if(command.dir == 3)
+  {
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
+  }
+  else
+  {
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    left_wheel.write(LEFT_WHEEL_FORWARD);
+  }
+  delay(delay_ms);
+  
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
   
   return "";  
 }
@@ -279,6 +296,14 @@ int cm_to_arm_servo(int cm)
 int cm_to_move_delay(int cm)
 {
   return round(cm * 78.2795);
+}
+
+int degrees_to_rotate_delay(int angle_degrees)
+{
+  float angle_rads = (angle_degrees * M_PI) / 180;
+  float cms = (TURNING_RADIUS * angle_rads);
+  
+  return cm_to_move_delay(cms);
 }
 
 void loop() {
