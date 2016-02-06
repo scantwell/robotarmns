@@ -4,7 +4,7 @@
 // long - 32 bits 4 bytes
 
 #include <Servo.h>
-#include <Math.h>
+#include <math.h>
 
 
 // PROTCOL STUFF
@@ -92,7 +92,7 @@ void sendResponse(Response resp)
 
 Servo pincer;
 const int PINCER_MAX = 103;
-const int PINCER_MIN = 0;
+const int PINCER_MIN = 40;
 
 Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
 const int ARM_MAX = 101; //4.2 cm 
@@ -111,7 +111,7 @@ const int RIGHT_WHEEL_FORWARD = 45;
 const int RIGHT_WHEEL_BACKWARD = 135;
 
 const int WHEEL_STOP = 90;
-
+const int TURNING_RADIUS = 19;
 
 union robot_int
 {
@@ -231,6 +231,7 @@ Response claw_to(ClawCommand command)
   Response resp;
   resp.command = (byte)command.id;
 
+  pincer.write(cm_to_claw_servo(command.centimeters));
   resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
   return resp;
 }
@@ -266,9 +267,7 @@ Response move_to(MoveCommand command)
 Response rotate(RotateCommand command)
 {
   Response resp;
-  
   resp.command = (byte)command.id;
-  //resp.command = "Rotate";
   
   if (command.rot_degrees < 0)
   {
@@ -276,13 +275,17 @@ Response rotate(RotateCommand command)
     resp.error_message = "Failed to rotate. Invalid negative degrees.";
     return resp;
   }
-  
+
   if (command.dir == 3)
   {
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the left.";
   }
   else if (command.dir == 4)
   {
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    left_wheel.write(LEFT_WHEEL_FORWARD);
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the right.";
   }
   else
@@ -291,9 +294,14 @@ Response rotate(RotateCommand command)
     resp.error = true;
     resp.error_message = "Unkown rotation direction " + (String)command.dir;
   }
+
+  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  delay(delay_ms);
+  
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
   return resp;
 }
-
 
 // MOVEMENT END
 
@@ -315,9 +323,33 @@ int cm_to_arm_servo(int cm)
   return servo;
 }
 
+int cm_to_claw_servo(int cm)
+{
+  float rv_per_cm = 12.8571429
+  int servo = round(rv_per_cm * cm + 40.868);
+  if(servo > PINCER_MAX)
+  {
+    servo = PINCER_MAX;
+  }
+  else if(servo < PINCER_MIN)
+  {
+    servo = PINCER_MIN;
+  }
+  
+  return servo;
+}
+
 int cm_to_move_delay(int cm)
 {
   return round(cm * 78.2795);
+}
+
+int degrees_to_rotate_delay(int angle_degrees)
+{
+  float angle_rads = (angle_degrees * M_PI) / 180;
+  float cms = (TURNING_RADIUS * angle_rads);
+  
+  return cm_to_move_delay(cms);
 }
 
 // FREE FUNCTION END
