@@ -268,6 +268,8 @@ Response rotate(RotateCommand command)
 {
   Response resp;
   resp.command = (byte)command.id;
+  int rVal;
+  int lVal;
   
   if (command.rot_degrees < 0)
   {
@@ -275,17 +277,19 @@ Response rotate(RotateCommand command)
     resp.error_message = "Failed to rotate. Invalid negative degrees.";
     return resp;
   }
-
+  
+  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  
   if (command.dir == 3)
   {
-    right_wheel.write(RIGHT_WHEEL_FORWARD);
-    left_wheel.write(LEFT_WHEEL_BACKWARD);
+    rVal = RIGHT_WHEEL_BACKWARD;
+    lVal = LEFT_WHEEL_FORWARD;
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the left.";
   }
   else if (command.dir == 4)
   {
-    right_wheel.write(RIGHT_WHEEL_BACKWARD);
-    left_wheel.write(LEFT_WHEEL_FORWARD);
+    rVal = RIGHT_WHEEL_FORWARD;
+    lVal = LEFT_WHEEL_BACKWARD;
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the right.";
   }
   else
@@ -293,13 +297,17 @@ Response rotate(RotateCommand command)
     // ERROR
     resp.error = true;
     resp.error_message = "Unkown rotation direction " + (String)command.dir;
+    return resp;
   }
-
-  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  
+  right_wheel.write(rVal);
+  left_wheel.write(lVal);
+  
   delay(delay_ms);
   
   left_wheel.write(WHEEL_STOP);
   right_wheel.write(WHEEL_STOP);
+  
   return resp;
 }
 
