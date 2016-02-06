@@ -282,14 +282,14 @@ Response rotate(RotateCommand command)
   
   if (command.dir == 3)
   {
-    rVal = RIGHT_WHEEL_BACKWARD;
-    lVal = LEFT_WHEEL_FORWARD;
+    rVal = RIGHT_WHEEL_FORWARD;
+    lVal = LEFT_WHEEL_BACKWARD;
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the left.";
   }
   else if (command.dir == 4)
   {
-    rVal = RIGHT_WHEEL_FORWARD;
-    lVal = LEFT_WHEEL_BACKWARD;
+    rVal = RIGHT_WHEEL_BACKWARD;
+    lVal = LEFT_WHEEL_FORWARD;
     resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the right.";
   }
   else
@@ -357,7 +357,7 @@ int degrees_to_rotate_delay(int angle_degrees)
   float angle_rads = (angle_degrees * M_PI) / 180;
   float cms = (TURNING_RADIUS * angle_rads);
   
-  return cm_to_move_delay(cms);
+  return cm_to_move_delay((cms/2));
 }
 
 // FREE FUNCTION END
