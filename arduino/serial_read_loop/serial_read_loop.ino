@@ -6,9 +6,9 @@
 #include <Servo.h>
 #include <math.h>
 
-Servo pincer;
+Servo pincer; //servo to cm = 12.8571429
 const int PINCER_MAX = 103;
-const int PINCER_MIN = 0;
+const int PINCER_MIN = 40;
 
 Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
 const int ARM_MAX = 101; //4.2 cm 
@@ -230,7 +230,7 @@ String move_arm_to(ArmCommand command)
 
 String move_claw_to(ClawCommand command)
 {
-  
+  pincer.write(cm_to_claw_servo(command.centimeters));
   return "";  
 }
 
@@ -288,6 +288,22 @@ int cm_to_arm_servo(int cm)
   else if(servo < ARM_MIN)
   {
     servo = ARM_MIN;
+  }
+  
+  return servo;
+}
+
+int cm_to_claw_servo(int cm)
+{
+  float rv_per_cm = 12.8571429
+  int servo = round(rv_per_cm * cm + 40.868);
+  if(servo > PINCER_MAX)
+  {
+    servo = PINCER_MAX;
+  }
+  else if(servo < PINCER_MIN)
+  {
+    servo = PINCER_MIN;
   }
   
   return servo;
