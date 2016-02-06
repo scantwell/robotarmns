@@ -103,12 +103,12 @@ const int ARM_MIN = 5; // 31.3 cm
 //1 Revolution = 1.820 Seconds
 //ms/cm = 78.2795
 Servo left_wheel;
-const int LEFT_WHEEL_FORWARD = 135;
-const int LEFT_WHEEL_BACKWARD = 45;
+const int LEFT_WHEEL_FORWARD = 45;
+const int LEFT_WHEEL_BACKWARD = 135;
       
 Servo right_wheel;
-const int RIGHT_WHEEL_FORWARD = 45;
-const int RIGHT_WHEEL_BACKWARD = 135;
+const int RIGHT_WHEEL_FORWARD = 135;
+const int RIGHT_WHEEL_BACKWARD = 45;
 
 const int WHEEL_STOP = 90;
 const int TURNING_RADIUS = 19;
@@ -319,6 +319,7 @@ int cm_to_arm_servo(int cm)
 {
   double rv_per_cm = 3.542435;
   int servo = round(rv_per_cm * cm + 9.868);
+  servo = (servo - 106) * -1;
   if(servo > ARM_MAX)
   {
     servo = ARM_MAX;
@@ -335,6 +336,7 @@ int cm_to_claw_servo(int cm)
 {
   double rv_per_cm = 12.8571429;
   int servo = round(rv_per_cm * cm + 40.868);
+  servo = (servo - 143) * -1;
   if(servo > PINCER_MAX)
   {
     servo = PINCER_MAX;
