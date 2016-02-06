@@ -241,7 +241,7 @@ Response move_to(MoveCommand command)
   Response resp;
   resp.command = (byte)command.id;
   
-  int delay_ms = cm_to_move_delay(command.centimeters);
+  int delay_ms = cm_to_move_delay((double)command.centimeters);
   
   if (command.dir == 2)
   {
@@ -317,7 +317,7 @@ Response rotate(RotateCommand command)
 
 int cm_to_arm_servo(int cm)
 {
-  float rv_per_cm = 3.542435;
+  double rv_per_cm = 3.542435;
   int servo = round(rv_per_cm * cm + 9.868);
   if(servo > ARM_MAX)
   {
@@ -333,7 +333,7 @@ int cm_to_arm_servo(int cm)
 
 int cm_to_claw_servo(int cm)
 {
-  float rv_per_cm = 12.8571429;
+  double rv_per_cm = 12.8571429;
   int servo = round(rv_per_cm * cm + 40.868);
   if(servo > PINCER_MAX)
   {
@@ -347,17 +347,17 @@ int cm_to_claw_servo(int cm)
   return servo;
 }
 
-int cm_to_move_delay(int cm)
+int cm_to_move_delay(double cm)
 {
   return round(cm * 78.2795);
 }
 
 int degrees_to_rotate_delay(int angle_degrees)
 {
-  float angle_rads = (angle_degrees * M_PI) / 180;
-  float cms = (TURNING_RADIUS * angle_rads);
+  double angle_rads = (angle_degrees * M_PI) / 180.0f;
+  double cms = (TURNING_RADIUS * angle_rads);
   
-  return cm_to_move_delay((cms/2));
+  return cm_to_move_delay((cms/2.0f));
 }
 
 // FREE FUNCTION END

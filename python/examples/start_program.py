@@ -6,7 +6,7 @@ def run(options):
 	robot = Robot(options.tty)
 	robot.connect()
 	robot.arm_to(10)
-	robot.claw_to(0)
+	robot.claw_to(2)
 	robot.rotate(Robot.RIGHT, 10)
 	robot.rotate(Robot.LEFT, 10)
 	robot.move(Robot.FORWARD, 5)
