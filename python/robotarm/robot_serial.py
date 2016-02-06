@@ -92,7 +92,7 @@ class RobotSerial(Serial):
             buf = obj
         print super(RobotSerial, self).write(buf)
         super(RobotSerial, self).flushOutput()
-        self.readCommand()
+        #self.readCommand()
 
     def readCommand(self):
         sleep(3)

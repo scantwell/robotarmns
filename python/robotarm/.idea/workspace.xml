@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7002a90e-feda-442f-97e9-602a77e4dc1c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/commands.py" afterPath="$PROJECT_DIR$/commands.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/robot.py" afterPath="$PROJECT_DIR$/robot.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/robot_serial.py" afterPath="$PROJECT_DIR$/robot_serial.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../../arduino/serial_read_loop/serial_read_loop.ino" afterPath="$PROJECT_DIR$/../../arduino/serial_read_loop/serial_read_loop.ino" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../examples/start_program.py" afterPath="$PROJECT_DIR$/../examples/start_program.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="robotarm.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="robot_serial.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="robot_serial.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/robot_serial.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.9078947">
-              <caret line="91" column="18" selection-start-line="91" selection-start-column="18" selection-end-line="91" selection-end-column="18" />
+            <state vertical-scroll-proportion="-17.555555">
+              <caret line="95" column="0" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
               <folding>
                 <element signature="e#0#25#0" expanded="true" />
               </folding>
@@ -51,10 +48,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="robot.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="robot.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/robot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
+            <state vertical-scroll-proportion="0.59915614">
               <caret line="67" column="30" selection-start-line="67" selection-start-column="30" selection-end-line="67" selection-end-column="30" />
               <folding>
                 <element signature="e#0#44#0" expanded="true" />
@@ -538,16 +535,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/robot.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="67" column="30" selection-start-line="67" selection-start-column="30" selection-end-line="67" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#44#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/commands.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -558,10 +545,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/robot_serial.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.9078947">
-          <caret line="91" column="18" selection-start-line="91" selection-start-column="18" selection-end-line="91" selection-end-column="18" />
+        <state vertical-scroll-proportion="-17.555555">
+          <caret line="95" column="0" selection-start-line="95" selection-start-column="0" selection-end-line="95" selection-end-column="0" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/robot.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.59915614">
+          <caret line="67" column="30" selection-start-line="67" selection-start-column="30" selection-end-line="67" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
