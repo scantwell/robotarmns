@@ -6,34 +6,8 @@
 #include <Servo.h>
 #include <math.h>
 
-Servo pincer;
-const int PINCER_MAX = 103;
-const int PINCER_MIN = 0;
 
-Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
-const int ARM_MAX = 101; //4.2 cm 
-const int ARM_MIN = 5; // 31.3 cm
-
-//wheel diameters = 7.4 cm
-//wheel c = 23.25cm 
-//1 Revolution = 1.820 Seconds
-//ms/cm = 78.2795
-Servo left_wheel;
-const int LEFT_WHEEL_FORWARD = 135;
-const int LEFT_WHEEL_BACKWARD = 45;
-      
-Servo right_wheel;
-const int RIGHT_WHEEL_FORWARD = 45;
-const int RIGHT_WHEEL_BACKWARD = 135;
-
-const int WHEEL_STOP = 90;
-const int TURNING_RADIUS = 19;
-
-union robot_int
-{
-  unsigned int value;
-  byte bytes[2];  
-};
+// PROTCOL STUFF
 
 struct ArmCommand
 {
@@ -67,17 +41,84 @@ struct RotateCommand
 
 struct Response
 {
-  String command;
+  byte command;
   String describe;
   boolean error;
   String error_message;
   Response() { 
-    command = "0";
+    command = 0;
     describe = ""; 
     error = false;
     error_message = "";
   }
 };
+
+void sendField(String value)
+{
+   int len = value.length()  + 1;
+  char retval[len];
+  value.toCharArray(retval, len);
+  Serial.write(retval);
+  Serial.write(0x00);
+}
+
+void sendFlag(boolean value)
+{
+  if (value)
+  {
+    Serial.write(0x01);
+  }
+  else
+  {
+    Serial.write(0x00);
+  }
+  Serial.write(0x00);
+}
+
+void sendResponse(Response resp)
+{
+  Serial.write(resp.command);
+  sendField(resp.describe);
+  sendFlag(resp.error);
+  sendField(resp.error_message);
+  //Serial.write(0x7F);
+  //Serial.flush();
+}
+
+// PROTCOL END
+
+
+// ROBOT 
+
+Servo pincer;
+const int PINCER_MAX = 103;
+const int PINCER_MIN = 40;
+
+Servo arm; // servo to cm = (101 - 5)/(31.3 - 4.2) = 3.542435      3.5
+const int ARM_MAX = 101; //4.2 cm 
+const int ARM_MIN = 5; // 31.3 cm
+
+//wheel diameters = 7.4 cm
+//wheel c = 23.25cm 
+//1 Revolution = 1.820 Seconds
+//ms/cm = 78.2795
+Servo left_wheel;
+const int LEFT_WHEEL_FORWARD = 135;
+const int LEFT_WHEEL_BACKWARD = 45;
+      
+Servo right_wheel;
+const int RIGHT_WHEEL_FORWARD = 45;
+const int RIGHT_WHEEL_BACKWARD = 135;
+
+const int WHEEL_STOP = 90;
+const int TURNING_RADIUS = 19;
+
+union robot_int
+{
+  unsigned int value;
+  byte bytes[2];  
+};
+
 
 int readInt()
 {
@@ -86,11 +127,6 @@ int readInt()
   rv.bytes[1] = Serial.read();
   return rv.value;
 }
-
-byte bytes[2];
-String what;
-robot_int header;
-Response resp;
 
 void setup() 
 {
@@ -112,206 +148,26 @@ void setup()
   // Init Right Wheel, range 0 - 180
   // Wire Color: Yellow
   right_wheel.attach(11);
-}
 
-Response arm_to(ArmCommand command)
-{
-  Response resp;
-  resp.error = false;
-  resp.error_message = move_arm_to(command);
-  if(resp.error_message != "")
-  {
-    resp.error = true;
-  }
-  resp.describe = "Moved Arm " + (String)command.centimeters + " cm.";
-  return resp;
-}
-
-Response claw_to(ClawCommand command)
-{
-  Response resp;
-  resp.error = false;
-  resp.error_message = move_claw_to(command);
-  if(resp.error_message != "")
-  {
-    resp.error = true;
-  }
-  resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
-  return resp;
-}
-
-Response move_to(MoveCommand command)
-{  
-  Response resp;
   
-  resp.error = false;
-  resp.error_message = move_robot_to(command);
-  if(resp.error_message != "")
-  {
-    resp.error = true;
-  }
+  // Write Starting Values
+  // 40
+  pincer.write(103);
+  arm.write(103);  
+  left_wheel.write(90);
+  right_wheel.write(90);
   
-  String dir = "forward";
-  
-  if (command.dir == 2)
-  {
-    dir = "backward"; 
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
   }
-  resp.describe = "Moved Robot " + dir + " " + (String)command.centimeters + " cm." ;
-  return resp;
-}
-
-Response rotate(RotateCommand command)
-{
-  Response resp;
-  if (command.rot_degrees < 0)
-  {
-    resp.error = true;
-    resp.error_message = "Failed to rotate. Invalid negative degrees.";
-  }
-  
-  resp.error_message = rotate_robot_to(command);
-  if(resp.error_message != "")
-  {
-    resp.error = true;
-  }
-  
-  String dir = "left.";
-  if (command.dir == 4)
-  {
-    dir = "right."; 
-  }
-  resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the " + dir;
-  return resp;
-}
-
-void sendField(String value)
-{
-   int len = value.length();
-  char retval[len];
-  value.toCharArray(retval, len);
-  Serial.write(retval);
-  Serial.write(0x00);
-}
-
-void sendFlag(boolean value)
-{
-  if (value)
-  {
-    Serial.write(0x01);
-  }
-  else
-  {
-    Serial.write(0x00);
-  }
-  Serial.write(0x00);
-}
-
-void sendInt8(int value)
-{
-  robot_int rv;
-  rv.value = value;
-  Serial.write(rv.bytes[0]);
-}
-
-void sendResponse(Response resp)
-{
-  sendField(resp.command);
-  sendField(resp.describe);
-  sendFlag(resp.error);
-  sendField(resp.error_message);
-}
-
-String move_arm_to(ArmCommand command)
-{
-  arm.write(cm_to_arm_servo(command.centimeters));
-  return "";
-}
-
-String move_claw_to(ClawCommand command)
-{
-  
-  return "";  
-}
-
-String move_robot_to(MoveCommand command)
-{
-  int delay_ms = cm_to_move_delay(command.centimeters);
-  if(command.dir == 1)
-  {
-    left_wheel.write(LEFT_WHEEL_FORWARD);
-    right_wheel.write(RIGHT_WHEEL_FORWARD);
-  }
-  else
-  {
-    left_wheel.write(LEFT_WHEEL_BACKWARD);
-    right_wheel.write(RIGHT_WHEEL_BACKWARD);
-  }
-  delay(delay_ms);
-  
-  left_wheel.write(WHEEL_STOP);
-  right_wheel.write(WHEEL_STOP);
-  
-  return "";  
-}
-
-String rotate_robot_to(RotateCommand command)
-{
-  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
-  
-  if(command.dir == 3)
-  {
-    right_wheel.write(RIGHT_WHEEL_FORWARD);
-    left_wheel.write(LEFT_WHEEL_BACKWARD);
-  }
-  else
-  {
-    right_wheel.write(RIGHT_WHEEL_BACKWARD);
-    left_wheel.write(LEFT_WHEEL_FORWARD);
-  }
-  delay(delay_ms);
-  
-  left_wheel.write(WHEEL_STOP);
-  right_wheel.write(WHEEL_STOP);
-  
-  return "";  
-}
-
-int cm_to_arm_servo(int cm)
-{
-  float rv_per_cm = 3.542435;
-  int servo = round(rv_per_cm * cm + 9.868);
-  if(servo > ARM_MAX)
-  {
-    servo = ARM_MAX;
-  }
-  else if(servo < ARM_MIN)
-  {
-    servo = ARM_MIN;
-  }
-  
-  return servo;
-}
-
-int cm_to_move_delay(int cm)
-{
-  return round(cm * 78.2795);
-}
-
-int degrees_to_rotate_delay(int angle_degrees)
-{
-  float angle_rads = (angle_degrees * M_PI) / 180;
-  float cms = (TURNING_RADIUS * angle_rads);
-  
-  return cm_to_move_delay(cms);
 }
 
 void loop() {
-  while( Serial.available() > 0)
+  if( Serial.available() > 0)
   {
-    String dir;
-    header.bytes[0] = Serial.read();
     Response resp;
+    robot_int header;
+    header.bytes[0] = Serial.read();
     switch(header.value)
     {
       // ARM COMMAND
@@ -328,7 +184,6 @@ void loop() {
         clawCommand.cmd_length = (int)Serial.read();
         clawCommand.centimeters = readInt();
         resp = claw_to(clawCommand);
-        
         break;
       case 3: // Move Command
         MoveCommand moveCommand;
@@ -347,11 +202,154 @@ void loop() {
         resp = rotate(rotCommand);
         break;
       default:
-        resp.error = false;
+        resp.error = true;
         resp.error_message = "Wrong header? " + header.value;
         break;
-    } // end of switch
+    } // end of switch*/
     sendResponse(resp);
   } // end of while
   delay(2000);
 }
+
+// ROBOT END
+
+
+// MOVEMENT FUNCTIONS
+
+Response arm_to(ArmCommand command)
+{
+  Response resp;
+
+  resp.command = (byte)command.id;//"Arm";
+  resp.describe = "Moved Arm " + (String)command.centimeters + " cm.";
+  arm.write(cm_to_arm_servo(command.centimeters));
+  return resp;
+}
+
+Response claw_to(ClawCommand command)
+{
+  Response resp;
+  resp.command = (byte)command.id;
+
+  pincer.write(cm_to_claw_servo(command.centimeters));
+  resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
+  return resp;
+}
+
+Response move_to(MoveCommand command)
+{ 
+  Response resp;
+  resp.command = (byte)command.id;
+  
+  int delay_ms = cm_to_move_delay(command.centimeters);
+  
+  if (command.dir == 2)
+  {
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    resp.describe = "Moved Robot backward " + (String)command.centimeters + " cm." ;
+  }
+  else
+  {
+    left_wheel.write(LEFT_WHEEL_FORWARD);
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
+    resp.describe = "Moved Robot forward " + (String)command.centimeters + " cm." ;
+  }
+
+  delay(delay_ms);
+  
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
+  
+  return resp;
+}
+
+Response rotate(RotateCommand command)
+{
+  Response resp;
+  resp.command = (byte)command.id;
+  
+  if (command.rot_degrees < 0)
+  {
+    resp.error = true;
+    resp.error_message = "Failed to rotate. Invalid negative degrees.";
+    return resp;
+  }
+
+  if (command.dir == 3)
+  {
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
+    resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the left.";
+  }
+  else if (command.dir == 4)
+  {
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    left_wheel.write(LEFT_WHEEL_FORWARD);
+    resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the right.";
+  }
+  else
+  {
+    // ERROR
+    resp.error = true;
+    resp.error_message = "Unkown rotation direction " + (String)command.dir;
+  }
+
+  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  delay(delay_ms);
+  
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
+  return resp;
+}
+
+// MOVEMENT END
+
+// FREE FUNCTIONS
+
+int cm_to_arm_servo(int cm)
+{
+  float rv_per_cm = 3.542435;
+  int servo = round(rv_per_cm * cm + 9.868);
+  if(servo > ARM_MAX)
+  {
+    servo = ARM_MAX;
+  }
+  else if(servo < ARM_MIN)
+  {
+    servo = ARM_MIN;
+  }
+  
+  return servo;
+}
+
+int cm_to_claw_servo(int cm)
+{
+  float rv_per_cm = 12.8571429;
+  int servo = round(rv_per_cm * cm + 40.868);
+  if(servo > PINCER_MAX)
+  {
+    servo = PINCER_MAX;
+  }
+  else if(servo < PINCER_MIN)
+  {
+    servo = PINCER_MIN;
+  }
+  
+  return servo;
+}
+
+int cm_to_move_delay(int cm)
+{
+  return round(cm * 78.2795);
+}
+
+int degrees_to_rotate_delay(int angle_degrees)
+{
+  float angle_rads = (angle_degrees * M_PI) / 180;
+  float cms = (TURNING_RADIUS * angle_rads);
+  
+  return cm_to_move_delay(cms);
+}
+
+// FREE FUNCTION END

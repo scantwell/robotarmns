@@ -2,6 +2,7 @@ from serial import Serial
 from construct import Struct, ULInt8, ULInt16, CString, Flag
 from commands import Arm, Claw, Move, Rotate
 from time import sleep
+from sys import stdout
 
 _armProtocol = Struct("ArmProtocol",
     ULInt8("commandId"),
@@ -44,8 +45,6 @@ _robotResponse = Struct("RobotResponse",
                         CString("error_message")
                         )
 
-#_robotResponse = CString("describe")
-
 class RobotSerial(Serial):
     def __init__(self,
                  port=None,
@@ -74,8 +73,13 @@ class RobotSerial(Serial):
             inter_byte_timeout=inter_byte_timeout,
             **kwargs)
 
+    def open(self):
+        super(RobotSerial, self).open()
+        sleep(3)
+        super(RobotSerial, self).flushOutput()
+        super(RobotSerial, self).flushInput()
+
     def write(self, obj):
-        buf = obj
         if isinstance(obj, Arm):
             buf = _armProtocol.build(obj)
         elif isinstance(obj, Claw):
@@ -84,14 +88,17 @@ class RobotSerial(Serial):
             buf = _moveProtocol.build(obj)
         elif isinstance(obj, Rotate):
             buf = _rotateProtocol.build(obj)
-        super(RobotSerial, self).write(buf)
-        self.readCommand()
+        else:
+            buf = obj
+        print super(RobotSerial, self).write(buf)
+        super(RobotSerial, self).flushOutput()
+        #self.readCommand()
 
     def readCommand(self):
         sleep(3)
+        print "Parsing command"
         response = ""
         while super(RobotSerial, self).inWaiting() != 0:
             response += self.read()
         if response != "":
-            #print "RESPONSE:{}".format(response)
             print _robotResponse.parse(response)

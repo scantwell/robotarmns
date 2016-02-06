@@ -1,5 +1,6 @@
 from commands import Arm, Claw, Move, Rotate
 from robot_serial import RobotSerial
+import threading
 
 class Robot(object):
 
@@ -8,8 +9,10 @@ class Robot(object):
     LEFT = 3
     RIGHT = 4
 
-    def __init__(self, device='/dev/tty.usbmodem1411'):
-        self._connection = RobotSerial(device, baudrate=9600)
+    def __init__(self, device='/dev/tty.usbmodem1421'):
+        self._connection = RobotSerial(device, baudrate=9600, timeout=15)
+        self._isConnected = False;
+        self._reader = None
 
     def arm_to(self, cm):
         '''Move the arm to the given centimeters above the ground.
@@ -28,8 +31,14 @@ class Robot(object):
     def connect(self):
         self.disconnect()
         self._connection.open()
+        self._isConnected = True
+        self._reader = None #threading.Thread(target=self._read_from_robot,)
+        #self._reader.start()
 
     def disconnect(self):
+        self._isConnected = False
+        if self._reader is not None:
+            self._reader.join()
         self._connection.close()
 
     def move(self, direction, cm):
@@ -55,3 +64,18 @@ class Robot(object):
 
         command = Rotate(direction, degrees)
         self._connection.write(command)
+
+    def read_from_robot(self):
+        msg = self._connection.readCommand()
+        while msg is not None:
+            print msg
+            msg = self._connection.readCommand()
+
+    def _read_from_robot(self):
+        while True:
+            if self._isConnected:
+                self._connection.readCommand()
+                #if msg is not None:
+                #    print msg
+            else:
+                break
