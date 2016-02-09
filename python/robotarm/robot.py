@@ -1,6 +1,6 @@
 from commands import Arm, Claw, Move, Rotate
 from robot_serial import RobotSerial
-
+from threading import Thread
 
 class Robot(object):
 
@@ -12,33 +12,32 @@ class Robot(object):
     def __init__(self, device='/dev/tty.usbmodem1421'):
         self._connection = RobotSerial(device, baudrate=9600, timeout=15)
         self._isConnected = False;
-        self._reader = None
+        self._sender = None
+        self._commands = []
 
     def arm_to(self, cm):
         '''Move the arm to the given centimeters above the ground.
         params cm: Centimeters from the ground to center of the claw.'''
         assert isinstance(cm, float) or isinstance(cm, int), "Invalid centimeters"
-        command = Arm(cm)
-        self._connection.write(command)
+        self._addCommand(Arm(cm))
 
     def claw_to(self, cm):
         '''Sets the distance between the claw.
         params cm: Centimeters between the two claw arms.'''
         assert isinstance(cm, float) or isinstance(cm, int), "Invalid centimeters"
-        command = Claw(cm)
-        self._connection.write(command)
+        self._addCommand(Claw(cm))
 
     def connect(self):
         self.disconnect()
         self._connection.open()
         self._isConnected = True
-        self._reader = None #threading.Thread(target=self._read_from_robot,)
-        #self._reader.start()
+        self._sender = Thread(target=self._send_robot)
+        self._sender.start()
 
     def disconnect(self):
         self._isConnected = False
-        if self._reader is not None:
-            self._reader.join()
+        if self._sender is not None:
+            self._sender.join()
         self._connection.close()
 
     def move(self, direction, cm):
@@ -49,8 +48,7 @@ class Robot(object):
 
         if not (direction == Robot.FORWARD or direction == Robot.BACKWARD):
             raise RuntimeError("Move direction is not recoginized.")
-        command = Move(direction, cm)
-        self._connection.write(command)
+        self._addCommand(Move(direction, cm))
 
     def rotate(self, direction, degrees):
         '''Rotates the robot in the direction specified by the given degrees.
@@ -61,21 +59,13 @@ class Robot(object):
             raise RuntimeError("Turning direction is not recognized.")
         if degrees < 0 or degrees > 360:
             raise RuntimeError("Invalid degrees.")
+        self._addCommand(Rotate(direction, degrees))
 
-        command = Rotate(direction, degrees)
-        self._connection.write(command)
+    def _addCommand(self, command):
+        self._commands.append(command)
 
-    def read_from_robot(self):
-        msg = self._connection.readCommand()
-        while msg is not None:
-            print msg
-            msg = self._connection.readCommand()
-
-    def _read_from_robot(self):
-        while True:
-            if self._isConnected:
-                self._connection.readCommand()
-                #if msg is not None:
-                #    print msg
-            else:
-                break
+    def _send_robot(self):
+        while True and self._isConnected:
+            if len(self._commands) > 0:
+                cmd = self._commands.pop(0).serialize()
+                self._connection.sendCommand(cmd)

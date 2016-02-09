@@ -1,48 +1,10 @@
 from serial import Serial
-from construct import Struct, ULInt8, ULInt16, CString, Flag
-from commands import Arm, Claw, Move, Rotate
+from construct import Struct, ULInt8, ULInt16, CString, Flag, Padding
+import struct
 from time import sleep
-from sys import stdout
-
-_armProtocol = Struct("ArmProtocol",
-    ULInt8("commandId"),
-    #ULInt8("flags"),
-    ULInt8("length"),
-    ULInt16("centimeters"),
-    #ULInt8("footer")
-    )
-
-_clawProtocol = Struct("ClawProtocol",
-    ULInt8("commandId"),
-    #ULInt8("flags"),
-    ULInt8("length"),
-    ULInt16("centimeters"),
-    #ULInt8("footer")
-    )
-
-_moveProtocol = Struct("MoveProtocol",
-    ULInt8("commandId"),
-    #ULInt8("flags"),
-    ULInt8("length"),
-    ULInt8("direction"),
-    ULInt16("centimeters"),
-    #ULInt8("footer")
-    )
-
-_rotateProtocol = Struct("RotateProtocol",
-    ULInt8("commandId"),
-    #ULInt8("flags"),
-    ULInt8("length"),
-    ULInt8("direction"),
-    ULInt16("degrees"),
-    #ULInt8("footer")
-    )
 
 _robotResponse = Struct("RobotResponse",
-                        ULInt8("command"),
-                        CString("describe"),
-                        Flag("error"),
-                        CString("error_message")
+                        Flag("error", truth=0, falsehood=1, default=False),
                         )
 
 class RobotSerial(Serial):
@@ -79,27 +41,14 @@ class RobotSerial(Serial):
         super(RobotSerial, self).flushOutput()
         super(RobotSerial, self).flushInput()
 
-    def write(self, obj):
-        if isinstance(obj, Arm):
-            buf = _armProtocol.build(obj)
-        elif isinstance(obj, Claw):
-            buf = _clawProtocol.build(obj)
-        elif isinstance(obj, Move):
-            buf = _moveProtocol.build(obj)
-        elif isinstance(obj, Rotate):
-            buf = _rotateProtocol.build(obj)
-        else:
-            buf = obj
-        print super(RobotSerial, self).write(buf)
+    def sendCommand(self, buf):
         super(RobotSerial, self).flushOutput()
-        sleep(4)
-        #self.readCommand()
-
-    def readCommand(self):
-        sleep(3)
-        print "Parsing command"
-        response = ""
-        while super(RobotSerial, self).inWaiting() != 0:
-            response += self.read()
-        if response != "":
-            print _robotResponse.parse(response)
+        super(RobotSerial, self).flushInput()
+        chksum = ULInt16("checksum").parse((sum(map(lambda x: int(struct.unpack('<B', x)[0]), buf))))
+        retry = True
+        while retry:
+            super(RobotSerial, self).write(buf)
+            super(RobotSerial, self).write(chksum)
+            response = _robotResponse.parse(super(RobotSerial, self).read())
+            if not response.error:
+                retry = False

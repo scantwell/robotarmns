@@ -174,21 +174,21 @@ void loop() {
       case 1:
         ArmCommand armCommand;
         armCommand.id = header.value;
-        armCommand.cmd_length = (int)Serial.read();
+        //armCommand.cmd_length = (int)Serial.read();
         armCommand.centimeters = readInt();
         resp = arm_to(armCommand);
         break;
       case 2: // Claw Command
         ClawCommand clawCommand;
         clawCommand.id = header.value;
-        clawCommand.cmd_length = (int)Serial.read();
+        //clawCommand.cmd_length = (int)Serial.read();
         clawCommand.centimeters = readInt();
         resp = claw_to(clawCommand);
         break;
       case 3: // Move Command
         MoveCommand moveCommand;
         moveCommand.id = header.value;
-        moveCommand.cmd_length = (int)Serial.read();
+        //moveCommand.cmd_length = (int)Serial.read();
         moveCommand.dir = (int)Serial.read();
         moveCommand.centimeters = readInt();
         resp = move_to(moveCommand);
@@ -196,7 +196,7 @@ void loop() {
       case 4: // Rotate Command
         RotateCommand rotCommand;
         rotCommand.id = header.value;
-        rotCommand.cmd_length = (int)Serial.read();
+        //rotCommand.cmd_length = (int)Serial.read();
         rotCommand.dir = (int)Serial.read();
         rotCommand.rot_degrees = readInt();
         resp = rotate(rotCommand);
