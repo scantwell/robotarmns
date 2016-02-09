@@ -1,6 +1,6 @@
 from commands import Arm, Claw, Move, Rotate
 from robot_serial import RobotSerial
-import threading
+
 
 class Robot(object):
 
