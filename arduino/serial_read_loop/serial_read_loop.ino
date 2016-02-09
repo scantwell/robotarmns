@@ -12,21 +12,18 @@
 struct ArmCommand
 {
   int id;
-  int cmd_length; // length of data in bytes
   int centimeters;
 };
 
 struct ClawCommand
 {
   int id;
-  int cmd_length; // length of data in bytes
   int centimeters;
 };
 
 struct MoveCommand
 {
   int id;
-  int cmd_length; // length of data in bytes
   int dir; // Direction to move in FORWARD/BACKWARD
   int centimeters;
 };
@@ -34,13 +31,13 @@ struct MoveCommand
 struct RotateCommand
 {
   int id;
-  int cmd_length; // length of data in bytes
   int dir; // Direction to rotate in LEFT/RIGHT
   int rot_degrees; // how much to rotate;
 };
 
 struct Response
 {
+  int code;
   byte command;
   String describe;
   boolean error;
@@ -55,7 +52,7 @@ struct Response
 
 void sendField(String value)
 {
-   int len = value.length()  + 1;
+  int len = value.length()  + 1;
   char retval[len];
   value.toCharArray(retval, len);
   Serial.write(retval);
@@ -77,10 +74,10 @@ void sendFlag(boolean value)
 
 void sendResponse(Response resp)
 {
-  Serial.write(resp.command);
-  sendField(resp.describe);
-  sendFlag(resp.error);
-  sendField(resp.error_message);
+  Serial.write(resp.code);
+  //sendField(resp.describe);
+  //sendFlag(resp.error);
+  //sendField(resp.error_message);
   //Serial.write(0x7F);
   //Serial.flush();
 }
@@ -112,6 +109,9 @@ const int RIGHT_WHEEL_BACKWARD = 45;
 
 const int WHEEL_STOP = 90;
 const int TURNING_RADIUS = 19;
+
+const int DATA_PASS = 0;
+const int DATA_FAIL = 1;
 
 union robot_int
 {
@@ -162,52 +162,83 @@ void setup()
   }
 }
 
-void loop() {
+void loop() {  
   if( Serial.available() > 0)
   {
     Response resp;
-    robot_int header;
-    header.bytes[0] = Serial.read();
-    switch(header.value)
+    if( Serial.available() != 6 )
     {
-      // ARM COMMAND
-      case 1:
-        ArmCommand armCommand;
-        armCommand.id = header.value;
-        armCommand.cmd_length = (int)Serial.read();
-        armCommand.centimeters = readInt();
-        resp = arm_to(armCommand);
-        break;
-      case 2: // Claw Command
-        ClawCommand clawCommand;
-        clawCommand.id = header.value;
-        clawCommand.cmd_length = (int)Serial.read();
-        clawCommand.centimeters = readInt();
-        resp = claw_to(clawCommand);
-        break;
-      case 3: // Move Command
-        MoveCommand moveCommand;
-        moveCommand.id = header.value;
-        moveCommand.cmd_length = (int)Serial.read();
-        moveCommand.dir = (int)Serial.read();
-        moveCommand.centimeters = readInt();
-        resp = move_to(moveCommand);
-        break;
-      case 4: // Rotate Command
-        RotateCommand rotCommand;
-        rotCommand.id = header.value;
-        rotCommand.cmd_length = (int)Serial.read();
-        rotCommand.dir = (int)Serial.read();
-        rotCommand.rot_degrees = readInt();
-        resp = rotate(rotCommand);
-        break;
-      default:
-        resp.error = true;
-        resp.error_message = "Wrong header? " + header.value;
-        break;
-    } // end of switch*/
-    sendResponse(resp);
-  } // end of while
+      delay(4000);
+      if( Serial.available() != 6 )
+      {
+        Serial.flush();
+        resp.code = DATA_FAIL;
+        while(Serial.available == 0)
+        {
+          sendResponse(resp);
+        }
+        return;
+      }
+    }
+    
+    int header = (int)Serial.read();
+    int dir = (int)Serial.read();
+    int centimeters = readInt();
+    int checksum = readInt();
+    
+    if( checksum == (header + dir + centimeters))
+    {
+      switch(header)
+      {
+        // ARM COMMAND
+        case 1:
+          ArmCommand armCommand;
+          armCommand.id = header;
+          armCommand.centimeters = centimeters;
+          arm_to(armCommand);
+          break;
+        case 2: // Claw Command
+          ClawCommand clawCommand;
+          clawCommand.id = header;
+          clawCommand.centimeters = centimeters;
+          claw_to(clawCommand);
+          break;
+        case 3: // Move Command
+          MoveCommand moveCommand;
+          moveCommand.id = header;
+          moveCommand.dir = dir;
+          moveCommand.centimeters = centimeters;
+          move_to(moveCommand);
+          break;
+        case 4: // Rotate Command
+          RotateCommand rotCommand;
+          rotCommand.id = header;
+          rotCommand.dir = dir;
+          rotCommand.rot_degrees = centimeters;
+          rotate(rotCommand);
+          break;
+        default:
+          break;
+      } // end of switch*/
+      resp.code = DATA_PASS;
+      sendResponse(resp);
+      while (Serial.available == 0)
+      {
+        delay(1500);
+        sendResponse(resp);
+      }
+    }
+    else
+    {
+      Serial.flush();
+      resp.code = DATA_FAIL;
+      while(Serial.available == 0)
+      {
+        sendResponse(resp);
+      }
+      return;
+    }
+  } // end of if
   delay(2000);
 }
 
