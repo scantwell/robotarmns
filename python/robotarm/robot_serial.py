@@ -4,7 +4,8 @@ import struct
 from time import sleep
 
 _robotResponse = Struct("RobotResponse",
-                        Flag("error", truth=0, falsehood=1, default=False),
+                        Flag("success", truth=0, falsehood=1, default=False),
+                        #ULInt8("error")
                         )
 
 class RobotSerial(Serial):
@@ -42,13 +43,17 @@ class RobotSerial(Serial):
         super(RobotSerial, self).flushInput()
 
     def sendCommand(self, buf):
+        print "Sending command"
         super(RobotSerial, self).flushOutput()
         super(RobotSerial, self).flushInput()
-        chksum = ULInt16("checksum").parse((sum(map(lambda x: int(struct.unpack('<B', x)[0]), buf))))
+        num = sum(map(lambda x: int(struct.unpack('<B', x)[0]), buf))
+        chksum = ULInt16("checksum").build(num)
         retry = True
         while retry:
             super(RobotSerial, self).write(buf)
             super(RobotSerial, self).write(chksum)
             response = _robotResponse.parse(super(RobotSerial, self).read())
-            if not response.error:
+            print "RESPONSE {}".format(response.success)
+            if response.success:
                 retry = False
+            print "RETRYING"

@@ -8,7 +8,7 @@ def run(options):
 	robot.claw_to(5)
 	robot.move(Robot.FORWARD, 31)
 	robot.claw_to(1)
-	robot.arm_to(30)
+	robot.arm_to(25)
 	robot.rotate(Robot.RIGHT, 108)
 	robot.move(Robot.FORWARD, 34)
 	robot.arm_to(22)

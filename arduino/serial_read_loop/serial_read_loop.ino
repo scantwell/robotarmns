@@ -37,7 +37,7 @@ struct RotateCommand
 
 struct Response
 {
-  int code;
+  byte code;
   byte command;
   String describe;
   boolean error;
@@ -74,6 +74,7 @@ void sendFlag(boolean value)
 
 void sendResponse(Response resp)
 {
+  //Serial.println("HELLO");
   Serial.write(resp.code);
   //sendField(resp.describe);
   //sendFlag(resp.error);
@@ -110,8 +111,8 @@ const int RIGHT_WHEEL_BACKWARD = 45;
 const int WHEEL_STOP = 90;
 const int TURNING_RADIUS = 19;
 
-const int DATA_PASS = 0;
-const int DATA_FAIL = 1;
+const byte DATA_PASS = 0;
+const byte DATA_FAIL = 1;
 
 union robot_int
 {
@@ -156,90 +157,73 @@ void setup()
   arm.write(103);  
   left_wheel.write(90);
   right_wheel.write(90);
-  
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+  Serial.write('H');
+  //while (!Serial) {
+  //  ; // wait for serial port to connect. Needed for native USB port only
+  //}
 }
 
-void loop() {  
-  if( Serial.available() > 0)
+void loop() { 
+  Response resp;
+  while (Serial.available() != 6)
   {
-    Response resp;
-    if( Serial.available() != 6 )
+    Serial.flush();
+    resp.code = DATA_FAIL;
+    sendResponse(resp);
+    delay(2000);
+  }
+  
+  int header = (int)Serial.read();
+  int dir = (int)Serial.read();
+  int centimeters = readInt();
+  int checksum = readInt();
+  
+  if( checksum == (header + dir + centimeters))
+  {
+    resp.code = DATA_PASS;
+    switch(header)
     {
-      delay(4000);
-      if( Serial.available() != 6 )
-      {
-        Serial.flush();
+      // ARM COMMAND
+      case 1:
+        ArmCommand armCommand;
+        armCommand.id = header;
+        armCommand.centimeters = centimeters;
+        arm_to(armCommand);
+        break;
+      case 2: // Claw Command
+        ClawCommand clawCommand;
+        clawCommand.id = header;
+        clawCommand.centimeters = centimeters;
+        claw_to(clawCommand);
+        break;
+      case 3: // Move Command
+        MoveCommand moveCommand;
+        moveCommand.id = header;
+        moveCommand.dir = dir;
+        moveCommand.centimeters = centimeters;
+        move_to(moveCommand);
+        break;
+      case 4: // Rotate Command
+        RotateCommand rotCommand;
+        rotCommand.id = header;
+        rotCommand.dir = dir;
+        rotCommand.rot_degrees = centimeters;
+        rotate(rotCommand);
+        break;
+      default:
         resp.code = DATA_FAIL;
-        while(Serial.available == 0)
-        {
-          sendResponse(resp);
-        }
-        return;
-      }
-    }
-    
-    int header = (int)Serial.read();
-    int dir = (int)Serial.read();
-    int centimeters = readInt();
-    int checksum = readInt();
-    
-    if( checksum == (header + dir + centimeters))
-    {
-      switch(header)
-      {
-        // ARM COMMAND
-        case 1:
-          ArmCommand armCommand;
-          armCommand.id = header;
-          armCommand.centimeters = centimeters;
-          arm_to(armCommand);
-          break;
-        case 2: // Claw Command
-          ClawCommand clawCommand;
-          clawCommand.id = header;
-          clawCommand.centimeters = centimeters;
-          claw_to(clawCommand);
-          break;
-        case 3: // Move Command
-          MoveCommand moveCommand;
-          moveCommand.id = header;
-          moveCommand.dir = dir;
-          moveCommand.centimeters = centimeters;
-          move_to(moveCommand);
-          break;
-        case 4: // Rotate Command
-          RotateCommand rotCommand;
-          rotCommand.id = header;
-          rotCommand.dir = dir;
-          rotCommand.rot_degrees = centimeters;
-          rotate(rotCommand);
-          break;
-        default:
-          break;
-      } // end of switch*/
-      resp.code = DATA_PASS;
-      sendResponse(resp);
-      while (Serial.available == 0)
-      {
-        delay(1500);
-        sendResponse(resp);
-      }
-    }
-    else
-    {
-      Serial.flush();
-      resp.code = DATA_FAIL;
-      while(Serial.available == 0)
-      {
-        sendResponse(resp);
-      }
-      return;
-    }
-  } // end of if
-  delay(2000);
+        break;
+    } // end of switch
+  } // end of checksum
+  else
+  {
+    resp.code = DATA_FAIL;
+  }
+  while (Serial.available() == 0)
+  {
+    sendResponse(resp);
+    delay(100);
+  }
 }
 
 // ROBOT END

@@ -32,6 +32,7 @@ class Robot(object):
         self._connection.open()
         self._isConnected = True
         self._sender = Thread(target=self._send_robot)
+        self._sender.daemon = True
         self._sender.start()
 
     def disconnect(self):
