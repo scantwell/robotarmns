@@ -335,7 +335,7 @@ int cm_to_arm_servo(int cm)
 int cm_to_claw_servo(int cm)
 {
   double rv_per_cm = 12.8571429;
-  int servo = round(rv_per_cm * cm + 40.868);
+  int servo = round(rv_per_cm * cm + 40);
   servo = (servo - 143) * -1;
   if(servo > PINCER_MAX)
   {
