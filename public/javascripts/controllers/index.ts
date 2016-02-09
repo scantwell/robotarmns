@@ -15,43 +15,21 @@ module RobotArm {
                     private http: ng.IHttpService,
                     private mdDialog: any,
                     private timeout: ng.ITimeoutService,
-                    private interval: ng.IIntervalService) {
-            // Setup Ping Service
-            this.interval(() => {
-                this.http.get('/api/ping'
-                ).then(() => {
-                    this.status = "connected";
-                }, () => {
-                    this.status = "disconnected";
-                });
-            }, 5000);
-        }
+                    private interval: ng.IIntervalService) { }
 
         public toggleSidePane() {
             this.mdSideNav('left')
                 .toggle()
-                .then(function () {
-                    //console.log("Toggled Left is Done");
-                });
+                .then(function () { });
         }
 
         public moveForward() {
-            /* WIP - Loading Overaly
-            this.mdDialog.show({
-                templateUrl: '/templates/loadingOverlay.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose: false
-            });
-            this.timeout(() => {
-                this.mdDialog.hide();
-            }, 1000);
-            */
-
-            this.http.post('/api/moveforward', {value: 50}
+            this.http.post('/api/move',
+                {
+                    movedirection: 1,
+                    centimeters: 5
+                }
             ).then((success) => {
-                this.timeout(() => {
-                    this.mdDialog.hide();
-                });
                 console.log(success);
             }, (error) => {
                 this.status = 'error';
@@ -59,7 +37,11 @@ module RobotArm {
             });
         }
         public turnLeft() {
-            this.http.post('/api/turnleft', {value: 50}
+            this.http.post('/api/rotate',
+                {
+                    rotatedirection: 3,
+                    degrees: 10
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -68,7 +50,11 @@ module RobotArm {
             });
         }
         public turnRight() {
-            this.http.post('/api/turnright', {value: 50}
+            this.http.post('/api/rotate',
+                {
+                    rotatedirection: 4,
+                    degrees: 10
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -77,7 +63,11 @@ module RobotArm {
             });
         }
         public moveBackward() {
-            this.http.post('/api/movebackward', {value: 50}
+            this.http.post('/api/move',
+                {
+                    movedirection: 2,
+                    centimeters: 5
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -86,7 +76,10 @@ module RobotArm {
             });
         }
         public openClaw() {
-            this.http.post('/api/openclaw', {value: 50}
+            this.http.post('/api/claw',
+                {
+                    centimeters: 5
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -95,7 +88,10 @@ module RobotArm {
             });
         }
         public closeClaw() {
-            this.http.post('/api/closeclaw', {value: 50}
+            this.http.post('/api/claw',
+                {
+                    centimeters: 3
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -104,7 +100,10 @@ module RobotArm {
             });
         }
         public raiseArm() {
-            this.http.post('/api/raisearm', {value: 50}
+            this.http.post('/api/arm',
+                {
+                    centimeters: 15
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {
@@ -113,7 +112,10 @@ module RobotArm {
             });
         }
         public lowerArm() {
-            this.http.post('/api/lowerarm', {value: 50}
+            this.http.post('/api/arm',
+                {
+                    centimeters: 5
+                }
             ).then((success) => {
                 console.log(success);
             }, (error) => {

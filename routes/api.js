@@ -1,101 +1,100 @@
 var express = require('express');
-var spawn = require('child_process').spawn;
 var router = express.Router();
 
-router.get('/', function(req, res) {
-  // API help page or something?
-  res.send('success');
+var serialport = require("serialport");
+var SerialPort = serialport.SerialPort;
+var serialPort = new SerialPort("/dev/ttyUSB1", {
+  baudrate: 9600,
+  parser: serialport.parsers.byteLength(4)
 });
 
-router.get('/ping', function(req, res)  {
-  res.send('success');
-});
-
-router.post('/moveforward', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'forward', '2500']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
+var callbackStack = [];
+serialPort.on("open", function () {
+  console.log('open');
+  serialPort.on('data', function(data) {
+    if (callbackStack.length > 0) {
+      var callback = callbackStack.shift();
+      callback(data);
     }
   });
 });
 
-router.post('/movebackward', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'backward', '2500']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
+// New Api Routes
+router.post('/arm', function(req, res) {
+  var commandId = 1;
+  var length = 2;
+  var centimeters = req.body.centimeters;
+
+  var buffer = new Buffer(length + 2);
+  buffer.writeUInt8(commandId, 0);
+  buffer.writeUInt8(length, 1);
+  buffer.writeUInt16LE(centimeters, 2);
+
+  serialPort.write(buffer);
+  callbackStack.push(function(data) {
+    console.log("Value Read:");
+    console.log(data);
+    res.send('success');
+  });
+
+});
+
+router.post('/claw', function(req, res) {
+  var commandId = 2;
+  var length = 2;
+  var centimeters = req.body.centimeters;
+
+
+  var buffer = new Buffer(length + 2);
+  buffer.writeUInt8(commandId, 0);
+  buffer.writeUInt8(length, 1);
+  buffer.writeUInt16LE(centimeters, 2);
+
+  serialPort.write(buffer);
+  callbackStack.push(function(data) {
+    console.log("Value Read:");
+    console.log(data);
+    res.send('success');
   });
 });
 
-router.post('/turnleft', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'left', '1000']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
+router.post('/move', function(req, res) {
+  var commandId = 3;
+  var length = 3;
+  var direction = req.body.movedirection;
+  var centimeters = req.body.centimeters;
+
+  var buffer = new Buffer(length + 2);
+  buffer.writeUInt8(commandId, 0);
+  buffer.writeUInt8(length, 1);
+  buffer.writeUInt8(direction, 2);
+  buffer.writeUInt16LE(centimeters, 3);
+
+  serialPort.write(buffer);
+  callbackStack.push(function(data) {
+    console.log("Value Read:");
+    console.log(data);
+    res.send('success');
   });
 });
 
-router.post('/turnright', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'right', '1000']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
-  });
-});
+router.post('/rotate', function(req, res) {
+  var commandId = 4;
+  var length = 3;
+  var direction = req.body.rotatedirection;
+  var degrees = req.body.degrees;
 
-router.post('/openclaw', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'claw', '5']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
-  });
-});
+  var buffer = new Buffer(length + 2);
+  buffer.writeUInt8(commandId, 0);
+  buffer.writeUInt8(length, 1);
+  buffer.writeUInt8(direction, 2);
+  buffer.writeUInt16LE(degrees, 3);
 
-router.post('/closeclaw', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'claw', '95']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
-  });
-});
-
-router.post('/raisearm', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'arm', '5']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
-  });
-});
-
-router.post('/lowerarm', function(req, res) {
-  var py = spawn('python', ['/Users/omnia/WebstormProjects/robotarmns/python/robotarm.py', 'arm', '95']);
-  py.on('close', function(exitCode) {
-    if (exitCode == 0) {
-      res.send('success')
-    } else {
-      res.status(500).send('failure')
-    }
+  serialPort.write(buffer);
+  callbackStack.push(function(data) {
+    console.log("Value Read:");
+    console.log(data);
+    res.send('success');
   });
 });
 
