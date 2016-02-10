@@ -11,28 +11,28 @@
 
 struct ArmCommand
 {
-  int id;
-  int centimeters;
+  unsigned int id;
+  unsigned int centimeters;
 };
 
 struct ClawCommand
 {
-  int id;
-  int centimeters;
+  unsigned int id;
+  unsigned int centimeters;
 };
 
 struct MoveCommand
 {
-  int id;
-  int dir; // Direction to move in FORWARD/BACKWARD
-  int centimeters;
+  unsigned int id;
+  unsigned int dir; // Direction to move in FORWARD/BACKWARD
+  unsigned int centimeters;
 };
 
 struct RotateCommand
 {
-  int id;
-  int dir; // Direction to rotate in LEFT/RIGHT
-  int rot_degrees; // how much to rotate;
+  unsigned int id;
+  unsigned int dir; // Direction to rotate in LEFT/RIGHT
+  unsigned int rot_degrees; // how much to rotate;
 };
 
 struct Response
@@ -74,7 +74,6 @@ void sendFlag(boolean value)
 
 void sendResponse(Response resp)
 {
-  //Serial.println("HELLO");
   Serial.write(resp.code);
   //sendField(resp.describe);
   //sendFlag(resp.error);
@@ -114,19 +113,11 @@ const int TURNING_RADIUS = 19;
 const byte DATA_PASS = 0;
 const byte DATA_FAIL = 1;
 
-union robot_int
+unsigned int readUnsignedInt()
 {
-  unsigned int value;
-  byte bytes[2];  
-};
-
-
-int readInt()
-{
-  robot_int rv; 
-  rv.bytes[0] = Serial.read();
-  rv.bytes[1] = Serial.read();
-  return rv.value;
+  byte lsb = Serial.read();
+  byte msb = Serial.read();
+  return ((msb << 8) | lsb);
 }
 
 void setup() 
@@ -157,26 +148,28 @@ void setup()
   arm.write(103);  
   left_wheel.write(90);
   right_wheel.write(90);
-  Serial.write('H');
-  //while (!Serial) {
-  //  ; // wait for serial port to connect. Needed for native USB port only
-  //}
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
 }
 
 void loop() { 
   Response resp;
   while (Serial.available() != 6)
   {
-    Serial.flush();
+    while (Serial.available())
+    {
+      Serial.read();
+    }
     resp.code = DATA_FAIL;
     sendResponse(resp);
     delay(2000);
   }
   
-  int header = (int)Serial.read();
-  int dir = (int)Serial.read();
-  int centimeters = readInt();
-  int checksum = readInt();
+  unsigned int header = (unsigned int)Serial.read();
+  unsigned int dir = (unsigned int)Serial.read();
+  unsigned int centimeters = readUnsignedInt();
+  unsigned int checksum = readUnsignedInt();
   
   if( checksum == (header + dir + centimeters))
   {
@@ -222,7 +215,7 @@ void loop() {
   while (Serial.available() == 0)
   {
     sendResponse(resp);
-    delay(100);
+    delay(1500);
   }
 }
 
@@ -369,7 +362,7 @@ int cm_to_move_delay(double cm)
   return round(cm * 78.2795);
 }
 
-int degrees_to_rotate_delay(int angle_degrees)
+int degrees_to_rotate_delay(unsigned int angle_degrees)
 {
   double angle_rads = (angle_degrees * M_PI) / 180.0f;
   double cms = (TURNING_RADIUS * angle_rads);

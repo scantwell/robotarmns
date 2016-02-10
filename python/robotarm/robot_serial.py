@@ -44,16 +44,16 @@ class RobotSerial(Serial):
 
     def sendCommand(self, buf):
         print "Sending command"
-        super(RobotSerial, self).flushOutput()
-        super(RobotSerial, self).flushInput()
         num = sum(map(lambda x: int(struct.unpack('<B', x)[0]), buf))
         chksum = ULInt16("checksum").build(num)
         retry = True
         while retry:
             super(RobotSerial, self).write(buf)
             super(RobotSerial, self).write(chksum)
+            super(RobotSerial, self).reset_input_buffer()
             response = _robotResponse.parse(super(RobotSerial, self).read())
             print "RESPONSE {}".format(response.success)
             if response.success:
                 retry = False
-            print "RETRYING"
+                sleep(2) #Waiting for Arduino to clear its buffer
+            #print "RETRYING"

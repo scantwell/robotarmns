@@ -10,7 +10,7 @@ class Robot(object):
     RIGHT = 4
 
     def __init__(self, device='/dev/tty.usbmodem1421'):
-        self._connection = RobotSerial(device, baudrate=9600, timeout=15)
+        self._connection = RobotSerial(device, baudrate=9600)
         self._isConnected = False;
         self._sender = None
         self._commands = []
