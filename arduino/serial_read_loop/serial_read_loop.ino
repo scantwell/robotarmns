@@ -5,50 +5,7 @@
 
 #include <Servo.h>
 #include <math.h>
-
-
-// PROTCOL STUFF
-
-struct ArmCommand
-{
-  unsigned int id;
-  unsigned int centimeters;
-};
-
-struct ClawCommand
-{
-  unsigned int id;
-  unsigned int centimeters;
-};
-
-struct MoveCommand
-{
-  unsigned int id;
-  unsigned int dir; // Direction to move in FORWARD/BACKWARD
-  unsigned int centimeters;
-};
-
-struct RotateCommand
-{
-  unsigned int id;
-  unsigned int dir; // Direction to rotate in LEFT/RIGHT
-  unsigned int rot_degrees; // how much to rotate;
-};
-
-struct Response
-{
-  byte code;
-  byte command;
-  String describe;
-  boolean error;
-  String error_message;
-  Response() { 
-    command = 0;
-    describe = ""; 
-    error = false;
-    error_message = "";
-  }
-};
+#include "robot_proto.h"
 
 void sendField(String value)
 {
@@ -181,27 +138,27 @@ void loop() {
         ArmCommand armCommand;
         armCommand.id = header;
         armCommand.centimeters = centimeters;
-        arm_to(armCommand);
+        arm_to(&armCommand);
         break;
       case 2: // Claw Command
         ClawCommand clawCommand;
         clawCommand.id = header;
         clawCommand.centimeters = centimeters;
-        claw_to(clawCommand);
+        claw_to(&clawCommand);
         break;
       case 3: // Move Command
         MoveCommand moveCommand;
         moveCommand.id = header;
         moveCommand.dir = dir;
         moveCommand.centimeters = centimeters;
-        move_to(moveCommand);
+        move_to(&moveCommand);
         break;
       case 4: // Rotate Command
         RotateCommand rotCommand;
         rotCommand.id = header;
         rotCommand.dir = dir;
         rotCommand.rot_degrees = centimeters;
-        rotate(rotCommand);
+        rotate(&rotCommand);
         break;
       default:
         resp.code = DATA_FAIL;
@@ -224,44 +181,44 @@ void loop() {
 
 // MOVEMENT FUNCTIONS
 
-Response arm_to(ArmCommand command)
+Response arm_to(ArmCommand *command)
 {
   Response resp;
 
-  resp.command = (byte)command.id;//"Arm";
-  resp.describe = "Moved Arm " + (String)command.centimeters + " cm.";
-  arm.write(cm_to_arm_servo(command.centimeters));
+  resp.command = (byte)command->id;//"Arm";
+  resp.describe = "Moved Arm " + (String)command->centimeters + " cm.";
+  arm.write(cm_to_arm_servo(command->centimeters));
   return resp;
 }
 
-Response claw_to(ClawCommand command)
+Response claw_to(ClawCommand *command)
 {
   Response resp;
-  resp.command = (byte)command.id;
+  resp.command = (byte)command->id;
 
-  pincer.write(cm_to_claw_servo(command.centimeters));
-  resp.describe = "Moved Claw " + (String)command.centimeters + " cm.";
+  pincer.write(cm_to_claw_servo(command->centimeters));
+  resp.describe = "Moved Claw " + (String)command->centimeters + " cm.";
   return resp;
 }
 
-Response move_to(MoveCommand command)
+Response move_to(MoveCommand *command)
 { 
   Response resp;
-  resp.command = (byte)command.id;
+  resp.command = (byte)command->id;
   
-  int delay_ms = cm_to_move_delay((double)command.centimeters);
+  int delay_ms = cm_to_move_delay((double)command->centimeters);
   
-  if (command.dir == 2)
+  if (command->dir == 2)
   {
     left_wheel.write(LEFT_WHEEL_BACKWARD);
     right_wheel.write(RIGHT_WHEEL_BACKWARD);
-    resp.describe = "Moved Robot backward " + (String)command.centimeters + " cm." ;
+    resp.describe = "Moved Robot backward " + (String)command->centimeters + " cm." ;
   }
   else
   {
     left_wheel.write(LEFT_WHEEL_FORWARD);
     right_wheel.write(RIGHT_WHEEL_FORWARD);
-    resp.describe = "Moved Robot forward " + (String)command.centimeters + " cm." ;
+    resp.describe = "Moved Robot forward " + (String)command->centimeters + " cm." ;
   }
 
   delay(delay_ms);
@@ -272,39 +229,39 @@ Response move_to(MoveCommand command)
   return resp;
 }
 
-Response rotate(RotateCommand command)
+Response rotate(RotateCommand *command)
 {
   Response resp;
-  resp.command = (byte)command.id;
+  resp.command = (byte)command->id;
   int rVal;
   int lVal;
   
-  if (command.rot_degrees < 0)
+  if (command->rot_degrees < 0)
   {
     resp.error = true;
     resp.error_message = "Failed to rotate. Invalid negative degrees.";
     return resp;
   }
   
-  int delay_ms = degrees_to_rotate_delay(command.rot_degrees);
+  int delay_ms = degrees_to_rotate_delay(command->rot_degrees);
   
-  if (command.dir == 3)
+  if (command->dir == 3)
   {
     rVal = RIGHT_WHEEL_FORWARD;
     lVal = LEFT_WHEEL_BACKWARD;
-    resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the left.";
+    resp.describe = "Rotated " + (String)command->rot_degrees + " degrees to the left.";
   }
-  else if (command.dir == 4)
+  else if (command->dir == 4)
   {
     rVal = RIGHT_WHEEL_BACKWARD;
     lVal = LEFT_WHEEL_FORWARD;
-    resp.describe = "Rotated " + (String)command.rot_degrees + " degrees to the right.";
+    resp.describe = "Rotated " + (String)command->rot_degrees + " degrees to the right.";
   }
   else
   {
     // ERROR
     resp.error = true;
-    resp.error_message = "Unkown rotation direction " + (String)command.dir;
+    resp.error_message = "Unkown rotation direction " + (String)command->dir;
     return resp;
   }
   
