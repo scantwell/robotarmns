@@ -105,9 +105,9 @@ void setup()
   arm.write(103);  
   left_wheel.write(90);
   right_wheel.write(90);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
+  //while (!Serial) {
+  //  ; // wait for serial port to connect. Needed for native USB port only
+  //}
 }
 
 void loop() { 
@@ -127,8 +127,9 @@ void loop() {
   unsigned int dir = (unsigned int)Serial.read();
   unsigned int centimeters = readUnsignedInt();
   unsigned int checksum = readUnsignedInt();
-  
-  if( checksum == (header + dir + centimeters))
+
+  unsigned int chksum = getChecksum(header, dir, centimeters);
+  if( checksum == chksum)
   {
     resp.code = DATA_PASS;
     switch(header)
@@ -174,6 +175,14 @@ void loop() {
     sendResponse(resp);
     delay(1500);
   }
+}
+
+unsigned int getChecksum(unsigned int header, unsigned int dir, unsigned int centimeters)
+{
+  unsigned int sum = header + dir;
+  sum += ((centimeters << 8) >> 8); // lsb
+  sum += (centimeters >> 8); //msb
+  return sum;
 }
 
 // ROBOT END
