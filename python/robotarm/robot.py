@@ -18,6 +18,7 @@ class Robot(object):
     LEFT = 3
     RIGHT = 4
     _ARM_OFFSET = 3.5 # Height from the ground to the center point of the claw when arm_to(0)
+    _CLAW_OFFSET = 5 # Length from the center of the robot to center of claw
 
     def __init__(self, device='/dev/tty.usbmodem1421'):
         self._connection = RobotSerial(device, baudrate=9600)
@@ -55,7 +56,7 @@ class Robot(object):
     def dropOff(self, pos):
         self.claw_to(0)
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
-        self.goto(resize(pos, (1, 2)))
+        self.goto(resize(pos, (1, 2)), claw_movement=True)
         self.claw_to(5)
 
     def setPosition(self, pos, direction):
@@ -63,25 +64,27 @@ class Robot(object):
         self._position.at = pos
         self._position.direction = self._normalize(direction)
 
-    def goto(self, to):
+    def goto(self, to, claw_movement=False):
         '''
         Moves to x y
-        :param x:
-        :param y:
-        :return:
         '''
         #assert isinstance(to, array)
-        v = self._normalize(to - self._position.at)
-        mag = int(round(linalg.norm(to)))
-        dir, deg = self._getRotation(v)
-        print "Rotating {} degrees in {} direction.".format(deg, dir)
-        #self.rotate(dir, deg)
-        print "Moving forward {}".format(mag)
-        self.move(Robot.FORWARD, mag)
-        self._position.at = to
-        self._position.direction = v
+        v = to - self._position.at
+        # Robot is at location to move to
+        if v.all() == 0:
+            return
+        mag = self._getMagnitude(v)
+        v_dir = self._normalize(v)
+        robot_dir, deg = self._getRotation(v_dir)
+        if claw_movement:
+            m = mag - self._CLAW_OFFSET
+            to *= (m/mag)
+            mag = m
+        self._rotate(robot_dir, deg)
+        self._move(Robot.FORWARD, mag)
+        self._setPosition(to, v_dir)
 
-    def move(self, direction, cm):
+    def _move(self, direction, cm):
         '''Moves the robot in the given direction for the given centimeters.
         params direction: Direction in which to move. ie Robot.FORWARD
         params cm: Centimeters the robot should move.'''
@@ -93,13 +96,12 @@ class Robot(object):
         self._addCommand(Move(direction, cm))
 
     def pickUp(self, pos):
-        self.arm_to(0)
         self.claw_to(5)
-        self.goto(resize(pos, (1, 2)))
+        self.arm_to(pos.item(2) + self._ARM_OFFSET)
+        self.goto(pos, claw_movement=True)
         self.claw_to(0)
-        self.arm_to(pos.item(2))
 
-    def rotate(self, direction, degrees):
+    def _rotate(self, direction, degrees):
         '''Rotates the robot in the direction specified by the given degrees.
         params direction: Direction in which to start moving. ie Robot.LEFT is counter-clockwise'''
         assert isinstance(direction, int) or isinstance()
@@ -113,17 +115,30 @@ class Robot(object):
     def _addCommand(self, command):
         self._commands.append(command)
 
+    def _getMagnitude(self, v):
+        return int(round(linalg.norm(v)))
+
     def _getRotation(self, vnorm):
-        r = acos(dot(vnorm, self._position.direction))
+        print "VNorm {} Direction Currently {}".format(vnorm, self._position.direction)
+        dprod = dot(vnorm, self._position.direction)
+        r = acos(dprod)
         print "r {}".format(r)
-        d = int(degrees(r))
+        d = int(round(degrees(r)))
         dir = Robot.RIGHT
         if cross(vnorm, self._position.direction) < 0:
             dir = Robot.LEFT
         return dir, d
 
+    def _newPoint(self, mag, vector):
+
     def _normalize(self, v):
+        mag = linalg.norm(v)
+        print "_Normalize V {} Mag {}".format(v, mag)
         return v / linalg.norm(v)
+
+    def _setPosition(self, at, dir):
+        self._position.at = at
+        self._position.direction = dir
 
     def _send_robot(self):
         while True and self._isConnected:
