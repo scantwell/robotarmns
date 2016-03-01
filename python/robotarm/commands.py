@@ -51,14 +51,14 @@ class Command(object):
 
 class Arm(Command):
     def __init__(self, centimeters):
-        assert isinstance(centimeters, int) or isinstance(centimeters, float), "Centimeters must be integer or float value."
+        assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
         self._protocol = _armProtocol
         self.commandId = get_command_id("Arm")
         self.centimeters = centimeters
 
 class Claw(Command):
     def __init__(self, centimeters):
-        assert isinstance(centimeters, int) or isinstance(centimeters, float), "Centimeters must be integer or float value."
+        assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
         self._protocol = _clawProtocol
         self.commandId = get_command_id("Claw")
         self.centimeters = centimeters
@@ -66,7 +66,7 @@ class Claw(Command):
 class Move(Command):
     def __init__(self, direction, centimeters):
         assert isinstance(direction, int), "Direction must be integer value."
-        assert isinstance(centimeters, int) or isinstance(centimeters, float), "Centimeters must be integer or float value."
+        assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
         self._protocol = _moveProtocol
         self.commandId = get_command_id("Move")
         self.direction = direction

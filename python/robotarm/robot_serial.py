@@ -47,6 +47,7 @@ class RobotSerial(Serial):
         num = sum(map(lambda x: int(struct.unpack('<B', x)[0]), buf))
         chksum = ULInt16("checksum").build(num)
         retry = True
+        print "MSG {} CHKSUM {}".format(buf, chksum)
         while retry:
             super(RobotSerial, self).write(buf)
             super(RobotSerial, self).write(chksum)
@@ -55,5 +56,4 @@ class RobotSerial(Serial):
             print "RESPONSE {}".format(response.success)
             if response.success:
                 retry = False
-                sleep(2) #Waiting for Arduino to clear its buffer
-            #print "RETRYING"
+                sleep(2)
