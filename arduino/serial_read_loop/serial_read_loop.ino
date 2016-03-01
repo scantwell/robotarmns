@@ -219,21 +219,24 @@ Response move_to(MoveCommand *command)
   
   if (command->dir == 2)
   {
-    left_wheel.write(LEFT_WHEEL_BACKWARD);
-    right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    port_write_backward();
+    //left_wheel.write(LEFT_WHEEL_BACKWARD);
+    //right_wheel.write(RIGHT_WHEEL_BACKWARD);
     resp.describe = "Moved Robot backward " + (String)command->centimeters + " cm." ;
   }
   else
   {
-    left_wheel.write(LEFT_WHEEL_FORWARD);
-    right_wheel.write(RIGHT_WHEEL_FORWARD);
+    port_write_forward();
+    //left_wheel.write(LEFT_WHEEL_FORWARD);
+    //right_wheel.write(RIGHT_WHEEL_FORWARD);
     resp.describe = "Moved Robot forward " + (String)command->centimeters + " cm." ;
   }
 
   delay(delay_ms);
-  
-  left_wheel.write(WHEEL_STOP);
-  right_wheel.write(WHEEL_STOP);
+
+  port_write_stop();
+  //left_wheel.write(WHEEL_STOP);
+  //right_wheel.write(WHEEL_STOP);
   
   return resp;
 }
@@ -337,3 +340,67 @@ int degrees_to_rotate_delay(unsigned int angle_degrees)
 }
 
 // FREE FUNCTION END
+
+// PORT FUNCTION
+
+void port_write_stop() {
+    PORTB = B00000000;
+    PORTB = B00001010;
+    PORTB = B00000000;
+    PORTB = B00001010;
+
+    PORTB = B00001010;
+    PORTB = B00000000;
+    PORTB = B00001010;
+    PORTB = B00000000;
+}
+
+void port_write_forward() {
+    PORTB = B00001010;
+    PORTB = B00001000;
+    PORTB = B00001010;
+    PORTB = B00000010;
+
+    PORTB = B00000000;
+    PORTB = B00000010;
+    PORTB = B00000000;
+    PORTB = B00001000;
+}
+
+void port_write_backward() {
+    PORTB = B00001010;
+    PORTB = B00000010;
+    PORTB = B00001010;
+    PORTB = B00001000;
+
+    PORTB = B00000000;
+    PORTB = B00001000;
+    PORTB = B00000000;
+    PORTB = B00000010;
+}
+
+void port_write_left() {
+    PORTB = B00001010;
+    PORTB = B00001010;
+    PORTB = B00001010;
+    PORTB = B00000000;
+
+    PORTB = B00000000;
+    PORTB = B00000000;
+    PORTB = B00000000;
+    PORTB = B00001010;
+}
+
+void port_write_right() {
+    PORTB = B00001010;
+    PORTB = B00000000;
+    PORTB = B00001010;
+    PORTB = B00001010;
+
+    PORTB = B00000000;
+    PORTB = B00001010;
+    PORTB = B00000000;
+    PORTB = B00000000;
+}
+
+// PORT FUNCTION END
