@@ -116,6 +116,8 @@ class Robot(object):
             raise RuntimeError("Turning direction is not recognized.")
         if degrees < 0 or degrees > 360:
             raise RuntimeError("Invalid degrees.")
+        if degrees == 0:
+            return
         self._addCommand(Rotate(direction, degrees))
 
     def _addCommand(self, command):
