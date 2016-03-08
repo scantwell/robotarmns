@@ -62,7 +62,7 @@ class Robot(object):
     def setPosition(self, pos, direction):
         #assert isinstance(vector, Vector)
         self._position.at = pos
-        self._position.direction = self._normalize(direction)
+        self._position.direction = resize(self._normalize(direction), (1, 2))
 
     def goto(self, to, claw_movement=False):
         '''
@@ -97,8 +97,11 @@ class Robot(object):
 
     def pickUp(self, pos):
         self.claw_to(5)
-        self.arm_to(pos.item(2) + self._ARM_OFFSET)
-        self.goto(pos, claw_movement=True)
+        a = int(round(pos.item(2) - self._ARM_OFFSET))
+        if a < 0:
+            a = 0
+        self.arm_to(a)
+        self.goto(resize(pos, (1, 2)), claw_movement=True)
         self.claw_to(0)
 
     def _rotate(self, direction, degrees):
@@ -128,8 +131,6 @@ class Robot(object):
         if cross(vnorm, self._position.direction) < 0:
             dir = Robot.LEFT
         return dir, d
-
-    def _newPoint(self, mag, vector):
 
     def _normalize(self, v):
         mag = linalg.norm(v)

@@ -219,24 +219,24 @@ Response move_to(MoveCommand *command)
   
   if (command->dir == 2)
   {
-    port_write_backward();
-    //left_wheel.write(LEFT_WHEEL_BACKWARD);
-    //right_wheel.write(RIGHT_WHEEL_BACKWARD);
+    //port_write_backward();
+    left_wheel.write(LEFT_WHEEL_BACKWARD);
+    right_wheel.write(RIGHT_WHEEL_BACKWARD);
     resp.describe = "Moved Robot backward " + (String)command->centimeters + " cm." ;
   }
   else
   {
-    port_write_forward();
-    //left_wheel.write(LEFT_WHEEL_FORWARD);
-    //right_wheel.write(RIGHT_WHEEL_FORWARD);
+    //port_write_forward();
+    left_wheel.write(LEFT_WHEEL_FORWARD);
+    right_wheel.write(RIGHT_WHEEL_FORWARD);
     resp.describe = "Moved Robot forward " + (String)command->centimeters + " cm." ;
   }
 
   delay(delay_ms);
 
-  port_write_stop();
-  //left_wheel.write(WHEEL_STOP);
-  //right_wheel.write(WHEEL_STOP);
+  //port_write_stop();
+  left_wheel.write(WHEEL_STOP);
+  right_wheel.write(WHEEL_STOP);
   
   return resp;
 }
@@ -356,15 +356,15 @@ void port_write_stop() {
 }
 
 void port_write_forward() {
-    PORTB = B00001010;
     PORTB = B00001000;
-    PORTB = B00001010;
-    PORTB = B00000010;
-
     PORTB = B00000000;
     PORTB = B00000010;
     PORTB = B00000000;
+    
+    PORTB = B00000010;
+    PORTB = B00001010;
     PORTB = B00001000;
+    PORTB = B00001010;
 }
 
 void port_write_backward() {
