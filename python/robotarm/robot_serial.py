@@ -47,7 +47,7 @@ class RobotSerial(Serial):
         while retry:
             super(RobotSerial, self).write(buf)
             super(RobotSerial, self).write(chksum)
-            super(RobotSerial, self).reset_input_buffer()
+            super(RobotSerial, self).flushInput()
             response = _robotResponse.parse(super(RobotSerial, self).read())
             print "RESPONSE {}".format(response.success)
             if response.success:
