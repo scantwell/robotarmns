@@ -344,63 +344,63 @@ int degrees_to_rotate_delay(unsigned int angle_degrees)
 // PORT FUNCTION
 
 void port_write_stop() {
-    PORTB = B00000000;
-    PORTB = B00001010;
-    PORTB = B00000000;
-    PORTB = B00001010;
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
 
-    PORTB = B00001010;
-    PORTB = B00000000;
-    PORTB = B00001010;
-    PORTB = B00000000;
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
 }
 
 void port_write_forward() {
-    PORTB = B00001010;
-    PORTB = B00001000;
-    PORTB = B00001010;
-    PORTB = B00000010;
+    PORTB = B00001010; delay(0);
+    PORTB = B00001000; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00000010; delay(0);
 
-    PORTB = B00000000;
-    PORTB = B00000010;
-    PORTB = B00000000;
-    PORTB = B00001000;
+    PORTB = B00000000; delay(0);
+    PORTB = B00000010; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00001000; delay(0);
 }
 
 void port_write_backward() {
-    PORTB = B00001010;
-    PORTB = B00000010;
-    PORTB = B00001010;
-    PORTB = B00001000;
+    PORTB = B00001010; delay(0);
+    PORTB = B00000010; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00001000; delay(0);
 
-    PORTB = B00000000;
-    PORTB = B00001000;
-    PORTB = B00000000;
-    PORTB = B00000010;
+    PORTB = B00000000; delay(0);
+    PORTB = B00001000; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00000010; delay(0);
 }
 
 void port_write_left() {
-    PORTB = B00001010;
-    PORTB = B00001010;
-    PORTB = B00001010;
-    PORTB = B00000000;
+    PORTB = B00001010; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
 
-    PORTB = B00000000;
-    PORTB = B00000000;
-    PORTB = B00000000;
-    PORTB = B00001010;
+    PORTB = B00000000; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
 }
 
 void port_write_right() {
-    PORTB = B00001010;
-    PORTB = B00000000;
-    PORTB = B00001010;
-    PORTB = B00001010;
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00001010; delay(0);
 
-    PORTB = B00000000;
-    PORTB = B00001010;
-    PORTB = B00000000;
-    PORTB = B00000000;
+    PORTB = B00000000; delay(0);
+    PORTB = B00001010; delay(0);
+    PORTB = B00000000; delay(0);
+    PORTB = B00000000; delay(0);
 }
 
 // PORT FUNCTION END
