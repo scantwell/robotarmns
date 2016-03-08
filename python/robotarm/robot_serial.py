@@ -18,9 +18,7 @@ class RobotSerial(Serial):
                  timeout=None,
                  xonxoff=False,
                  rtscts=False,
-                 write_timeout=None,
                  dsrdtr=False,
-                 inter_byte_timeout=None,
                  **kwargs):
         super(RobotSerial, self).__init__(
             port=port,
@@ -31,9 +29,7 @@ class RobotSerial(Serial):
             timeout=timeout,
             xonxoff=xonxoff,
             rtscts=rtscts,
-            write_timeout=write_timeout,
             dsrdtr=dsrdtr,
-            inter_byte_timeout=inter_byte_timeout,
             **kwargs)
 
     def open(self):

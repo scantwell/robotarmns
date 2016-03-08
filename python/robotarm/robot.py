@@ -34,7 +34,7 @@ class Robot(object):
         cm -= Robot._ARM_OFFSET
         if cm < 0:
             cm = 0
-        self._addCommand(Arm(cm))
+        self._addCommand(Arm(int(round(cm))))
 
     def claw_to(self, cm):
         '''Sets the distance between the claw.
