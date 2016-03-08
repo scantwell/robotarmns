@@ -67,7 +67,7 @@ void Robot::arm(unsigned int cm)
 
 void Robot::claw(unsigned int cm)
 {
-  double rv_per_cm = 12.8571429;
+  double rv_per_cm = 7.875;
   int s_val = round(this->PINCER_MAX - (rv_per_cm * cm));
 
   if(s_val > PINCER_MAX)

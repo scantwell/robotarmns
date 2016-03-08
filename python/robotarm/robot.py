@@ -60,7 +60,7 @@ class Robot(object):
         self.claw_to(0)
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
         self.goto(resize(pos, (1, 2)), claw_movement=True)
-        self.claw_to(5)
+        self.claw_to(8)
 
     def setPosition(self, pos, direction):
         #assert isinstance(vector, Vector)
@@ -99,7 +99,7 @@ class Robot(object):
         self._addCommand(Move(direction, cm))
 
     def pickUp(self, pos):
-        self.claw_to(5)
+        self.claw_to(8)
         a = int(round(pos.item(2) - self._ARM_OFFSET))
         if a < 0:
             a = 0
