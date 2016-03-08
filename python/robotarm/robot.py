@@ -31,6 +31,9 @@ class Robot(object):
         '''Move the arm to the given centimeters above the ground.
         params cm: Centimeters from the ground to center of the claw.'''
         assert isinstance(cm, float) or isinstance(cm, int), "Invalid centimeters"
+        cm -= Robot._ARM_OFFSET
+        if cm < 0:
+            cm = 0
         self._addCommand(Arm(cm))
 
     def claw_to(self, cm):
