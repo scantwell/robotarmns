@@ -26,6 +26,7 @@ class Robot(object):
         self._sender = None
         self._commands = []
         self._position = Position(array([0, 0]), array([0, 1]))
+        self._hasDroppedItem = False
 
     def arm_to(self, cm):
         '''Move the arm to the given centimeters above the ground.
@@ -61,6 +62,7 @@ class Robot(object):
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
         self.goto(resize(pos, (1, 2)), claw_movement=True)
         self.claw_to(8)
+        self._hasDroppedItem = True
 
     def setPosition(self, pos, direction):
         #assert isinstance(vector, Vector)
@@ -72,6 +74,8 @@ class Robot(object):
         Moves to x y
         '''
         #assert isinstance(to, array)
+        if self._hasDroppedItem:
+            self._clearObstacle()
         v = to - self._position.at
         # Robot is at location to move to
         if v.all() == 0:
@@ -86,6 +90,14 @@ class Robot(object):
         self._rotate(robot_dir, deg)
         self._move(Robot.FORWARD, mag)
         self._setPosition(to, v_dir)
+
+    def _clearObstacle(self):
+        mag = -5
+        to = mag * self._position.direction
+        pos = self._position.at + to
+        self._move(Robot.BACKWARD, mag)
+        self._setPosition(to, self._position.direction)
+        self._hasDroppedItem = False
 
     def _move(self, direction, cm):
         '''Moves the robot in the given direction for the given centimeters.
