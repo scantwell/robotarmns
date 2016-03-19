@@ -18,7 +18,7 @@ class Robot(object):
     LEFT = 3
     RIGHT = 4
     _ARM_OFFSET = 3.5 # Height from the ground to the center point of the claw when arm_to(0)
-    _CLAW_OFFSET = 5 # Length from the center of the robot to center of claw
+    _CLAW_OFFSET = 8 # Length from the center of the robot to center of claw
 
     def __init__(self, device='/dev/tty.usbmodem1421'):
         self._connection = RobotSerial(device, baudrate=9600)
@@ -59,13 +59,13 @@ class Robot(object):
     def dropOff(self, pos):
         self.claw_to(0)
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
-        self.goto(resize(pos, (1, 2)), claw_movement=True)
+        self.goto(resize(pos, (1, 2))[0], claw_movement=True)
         self.claw_to(8)
 
     def setPosition(self, pos, direction):
         #assert isinstance(vector, Vector)
         self._position.at = pos
-        self._position.direction = resize(self._normalize(direction), (1, 2))
+        self._position.direction = resize(self._normalize(direction), (1, 2)[0])
 
     def goto(self, to, claw_movement=False):
         '''
@@ -74,14 +74,15 @@ class Robot(object):
         #assert isinstance(to, array)
         v = to - self._position.at
         # Robot is at location to move to
-        if v.all() == 0:
+        if v.any() == 0:
+	    print(v)
             return
         mag = self._getMagnitude(v)
         v_dir = self._normalize(v)
         robot_dir, deg = self._getRotation(v_dir)
         if claw_movement:
             m = mag - self._CLAW_OFFSET
-            to *= (m/mag)
+            to = to * (float(m)/mag)
             mag = m
         self._rotate(robot_dir, deg)
         self._move(Robot.FORWARD, mag)
@@ -104,7 +105,7 @@ class Robot(object):
         if a < 0:
             a = 0
         self.arm_to(a)
-        self.goto(resize(pos, (1, 2)), claw_movement=True)
+        self.goto(resize(pos, (1, 2))[0], claw_movement=True)
         self.claw_to(0)
 
     def _rotate(self, direction, degrees):
@@ -127,7 +128,7 @@ class Robot(object):
         return int(round(linalg.norm(v)))
 
     def _getRotation(self, vnorm):
-        print "VNorm {} Direction Currently {}".format(vnorm, self._position.direction)
+        print "VNorm {} Direction Currently {} Current At{}".format(vnorm, self._position.direction, self._position.at)
         dprod = dot(vnorm, self._position.direction)
         r = acos(dprod)
         print "r {}".format(r)
@@ -143,7 +144,11 @@ class Robot(object):
         return v / linalg.norm(v)
 
     def _setPosition(self, at, dir):
+	print(at)
+	print(self._position.at)
         self._position.at = at
+	print(at)
+	print(self._position.at)
         self._position.direction = dir
 
     def _send_robot(self):
