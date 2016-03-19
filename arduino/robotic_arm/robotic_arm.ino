@@ -4,7 +4,6 @@
 // long - 32 bits 4 bytes
 
 #include <math.h>
-#include "robot_proto.h"
 #include "robot.h"
 
 // ROBOT 
