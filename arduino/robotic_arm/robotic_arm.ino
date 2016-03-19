@@ -7,53 +7,16 @@
 #include "robot_proto.h"
 #include "robot.h"
 
-void sendField(String value)
-{
-  int len = value.length()  + 1;
-  char retval[len];
-  value.toCharArray(retval, len);
-  Serial.write(retval);
-  Serial.write(0x00);
-}
-
-void sendFlag(boolean value)
-{
-  if (value)
-  {
-    Serial.write(0x01);
-  }
-  else
-  {
-    Serial.write(0x00);
-  }
-  Serial.write(0x00);
-}
-
-void sendResponse(Response resp)
-{
-  Serial.write(resp.code);
-  //sendField(resp.describe);
-  //sendFlag(resp.error);
-  //sendField(resp.error_message);
-  //Serial.write(0x7F);
-  //Serial.flush();
-}
-
-// PROTCOL END
-
-
 // ROBOT 
 Robot* ROBOT;
-
 const byte DATA_PASS = 0;
-const byte DATA_FAIL = 1;
+const byte DATA_FAIL = 1; // Code to repeat transmission
 
-unsigned int readUnsignedInt()
-{
-  byte lsb = Serial.read();
-  byte msb = Serial.read();
-  return ((msb << 8) | lsb);
-}
+// Function declartations
+unsigned int getChecksum(unsigned int, unsigned int, unsigned int);
+void sendResponse(int);
+unsigned int readUnsignedInt();
+
 
 void setup() 
 {
@@ -68,15 +31,16 @@ void setup()
 }
 
 void loop() { 
-  Response resp;
+  int response_code;
+  // If all packets were not received 
   while (Serial.available() != 6)
   {
+    //Clear the buffer
     while (Serial.available())
     {
       Serial.read();
     }
-    resp.code = DATA_FAIL;
-    sendResponse(resp);
+    sendResponse(DATA_FAIL);
     delay(2000);
   }
   
@@ -88,11 +52,10 @@ void loop() {
   unsigned int chksum = getChecksum(header, dir, centimeters);
   if( checksum == chksum)
   {
-    resp.code = DATA_PASS;
+    response_code = DATA_PASS;
     switch(header)
     {
-      // ARM COMMAND
-      case 1:
+      case 1: // Arm Command
         ROBOT->arm(centimeters);
         break;
       case 2: // Claw Command
@@ -105,26 +68,42 @@ void loop() {
         ROBOT->rotate(dir, centimeters);
         break;
       default:
-        resp.code = DATA_FAIL;
+        response_code = DATA_FAIL;
         break;
     } // end of switch
   } // end of checksum
   else
   {
-    resp.code = DATA_FAIL;
+    response_code = DATA_FAIL;
   }
+  // Wait until some data is available
   while (Serial.available() == 0)
   {
-    sendResponse(resp);
+    sendResponse(response_code);
     delay(1500);
   }
 }
 
+// Summation on all of the packets excluding the checksum itself
 unsigned int getChecksum(unsigned int header, unsigned int dir, unsigned int centimeters)
 {
   unsigned int sum = header + dir;
   sum += ((centimeters << 8) >> 8); // lsb
   sum += (centimeters >> 8); //msb
   return sum;
+}
+
+// Sends DATA_FAIL/DATA_PASS to caller
+void sendResponse(int code)
+{
+  Serial.write(code);
+}
+
+// Parse unsigned integer from the serial buffer
+unsigned int readUnsignedInt()
+{
+  byte lsb = Serial.read();
+  byte msb = Serial.read();
+  return ((msb << 8) | lsb);
 }
 
