@@ -12,13 +12,13 @@ _commandIds = {"Arm": 1,
 
 _armProtocol = Struct("ArmProtocol",
     ULInt8("commandId"),
-    Padding(1),
+    Padding(1), #Padding zeros for 8 bits
     ULInt16("centimeters"),
     )
 
 _clawProtocol = Struct("ClawProtocol",
     ULInt8("commandId"),
-    Padding(1),
+    Padding(1), #Padding zeros for 8 bits
     ULInt16("centimeters"),
     )
 
@@ -28,13 +28,11 @@ _moveProtocol = Struct("MoveProtocol",
     ULInt16("centimeters"),
     )
 
-# 40
 _rotateProtocol = Struct("RotateProtocol",
     ULInt8("commandId"),
     ULInt8("direction"),
     ULInt16("degrees"),
     )
-
 
 def get_command_id(command_name):
     commandId = _commandIds.get(command_name, None)
@@ -43,6 +41,9 @@ def get_command_id(command_name):
     return commandId
 
 class Command(object):
+    '''
+    Base class for commands
+    '''
     def serialize(self):
         return self._protocol.build(self)
 
@@ -50,6 +51,9 @@ class Command(object):
         return self._protocol.parse(buf)
 
 class Arm(Command):
+    '''
+    Robot Arm Command
+    '''
     def __init__(self, centimeters):
         assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
         self._protocol = _armProtocol
@@ -57,6 +61,9 @@ class Arm(Command):
         self.centimeters = centimeters
 
 class Claw(Command):
+    '''
+    Robot Claw Command
+    '''
     def __init__(self, centimeters):
         assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
         self._protocol = _clawProtocol
@@ -64,6 +71,9 @@ class Claw(Command):
         self.centimeters = centimeters
 
 class Move(Command):
+    '''
+    Robot Move Command
+    '''
     def __init__(self, direction, centimeters):
         assert isinstance(direction, int), "Direction must be integer value."
         assert isinstance(centimeters, int) or isinstance(centimeters, int), "Centimeters must be integer or float value."
@@ -77,6 +87,9 @@ class Move(Command):
 
 # Should there be a direction or should it be dictated whether the number is negative
 class Rotate(Command):
+    '''
+    Robot Rotate Command
+    '''
     def __init__(self, direction, degrees):
         assert isinstance(direction, int), "Direction must be integer value."
         assert isinstance(degrees, int), "Degrees must be integer value."
