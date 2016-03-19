@@ -6,7 +6,6 @@ from math import acos, degrees
 
 class Position(object):
     def __init__(self, at, direction):
-        #assert isinstance(at, array) and isinstance(direction, array)
         self.at = at
         self.direction = direction
 
@@ -44,6 +43,10 @@ class Robot(object):
         self._addCommand(Claw(cm))
 
     def connect(self):
+        '''
+        Connects to the robot.
+        :return:
+        '''
         self.disconnect()
         self._connection.open()
         self._isConnected = True
@@ -52,28 +55,33 @@ class Robot(object):
         self._sender.start()
 
     def disconnect(self):
+        '''
+        Disconnect from the robot.
+        '''
         self._isConnected = False
         if self._sender is not None:
             self._sender.join()
         self._connection.close()
 
     def dropOff(self, pos):
+        '''
+        Drops off item at the passed position.
+        :param pos: A three dimensional numpy.array
+        '''
+        assert isinstance(array, pos)
         self.claw_to(0)
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
         self.goto(resize(pos, (1, 2))[0], claw_movement=True)
         self.claw_to(8)
         self._hasDroppedItem = True
 
-    def setPosition(self, pos, direction):
-        #assert isinstance(vector, Vector)
-        self._position.at = pos
-        self._position.direction = resize(self._normalize(direction), (1, 2)[0])
-
     def goto(self, to, claw_movement=False):
         '''
-        Moves to x y
+        Moves to location specified by to
+        :param to: A two dimensional numpy.array
+        :param claw_movement: Flag which indicates if the robot is positioning for to pick up an item
         '''
-        #assert isinstance(to, array)
+        assert isinstance(array, to)
         if self._hasDroppedItem:
             self._clearObstacle()
         v = to - self._position.at
@@ -92,8 +100,7 @@ class Robot(object):
         self._setPosition(to, v_dir)
 
     def _clearObstacle(self):
-        mag = 5
-        print 'POSITION {}  DIR {}'.format(self._position.at, self._position.direction)
+        mag = 10 # Degrees to back up to clear an obstacle.
         to = mag * -1 * self._position.direction
         pos = self._position.at + to
         self._move(Robot.BACKWARD, mag)
@@ -106,12 +113,12 @@ class Robot(object):
         params cm: Centimeters the robot should move.'''
         assert isinstance(direction, int)
         assert isinstance(cm, int)
-
         if not (direction == Robot.FORWARD or direction == Robot.BACKWARD):
             raise RuntimeError("Move direction is not recoginized.")
         self._addCommand(Move(direction, cm))
 
     def pickUp(self, pos):
+        assert isinstance(pos, array)
         self.claw_to(8)
         a = int(round(pos.item(2) - self._ARM_OFFSET))
         if a < 0:
@@ -123,8 +130,7 @@ class Robot(object):
     def _rotate(self, direction, degrees):
         '''Rotates the robot in the direction specified by the given degrees.
         params direction: Direction in which to start moving. ie Robot.LEFT is counter-clockwise'''
-        assert isinstance(direction, int) or isinstance()
-
+        assert isinstance(direction, int)
         if not (direction == Robot.LEFT or direction == Robot.RIGHT):
             raise RuntimeError("Turning direction is not recognized.")
         if degrees < 0 or degrees > 360:
@@ -140,10 +146,8 @@ class Robot(object):
         return int(round(linalg.norm(v)))
 
     def _getRotation(self, vnorm):
-        print "VNorm {} Direction Currently {} Current At{}".format(vnorm, self._position.direction, self._position.at)
         dprod = dot(vnorm, self._position.direction)
         r = acos(dprod)
-        print "r {}".format(r)
         d = int(round(degrees(r)))
         dir = Robot.RIGHT
         if cross(vnorm, self._position.direction) < 0:
@@ -151,8 +155,6 @@ class Robot(object):
         return dir, d
 
     def _normalize(self, v):
-        mag = linalg.norm(v)
-        print "_Normalize V {} Mag {}".format(v, mag)
         return v / linalg.norm(v)
 
     def _setPosition(self, at, dir):
