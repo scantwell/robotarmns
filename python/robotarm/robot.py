@@ -79,7 +79,6 @@ class Robot(object):
         v = to - self._position.at
         # Robot is at location to move to
         if v.any() == 0:
-	    print(v)
             return
         mag = self._getMagnitude(v)
         v_dir = self._normalize(v)
@@ -93,12 +92,12 @@ class Robot(object):
         self._setPosition(to, v_dir)
 
     def _clearObstacle(self):
-        mag = -5
+        mag = 5
         print 'POSITION {}  DIR {}'.format(self._position.at, self._position.direction)
-        to = mag * self._position.direction
+        to = mag * -1 * self._position.direction
         pos = self._position.at + to
-        self._move(Robot.BACKWARD, abs(mag))
-        self._setPosition(to, self._position.direction)
+        self._move(Robot.BACKWARD, mag)
+        self._setPosition(pos, self._position.direction)
         self._hasDroppedItem = False
 
     def _move(self, direction, cm):
@@ -157,11 +156,7 @@ class Robot(object):
         return v / linalg.norm(v)
 
     def _setPosition(self, at, dir):
-	print(at)
-	print(self._position.at)
         self._position.at = at
-	print(at)
-	print(self._position.at)
         self._position.direction = dir
 
     def _send_robot(self):
