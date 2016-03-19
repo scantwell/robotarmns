@@ -1,7 +1,7 @@
 from commands import Arm, Claw, Move, Rotate
 from robot_serial import RobotSerial
 from threading import Thread
-from numpy import array, cross, dot, linalg, resize
+from numpy import array, cross, dot, linalg, ndarray, resize
 from math import acos, degrees
 
 class Position(object):
@@ -25,7 +25,7 @@ class Robot(object):
         self._sender = None
         self._commands = []
         self._position = Position(array([0, 0]), array([0, 1]))
-        self._hasDroppedItem = False
+        self._hasDroppedItem = False # Flag to indicate if the last command was a drop off
 
     def arm_to(self, cm):
         '''Move the arm to the given centimeters above the ground.
@@ -68,7 +68,7 @@ class Robot(object):
         Drops off item at the passed position.
         :param pos: A three dimensional numpy.array
         '''
-        assert isinstance(array, pos)
+        assert isinstance(pos, ndarray)
         self.claw_to(0)
         self.arm_to(pos.item(2) + Robot._ARM_OFFSET)
         self.goto(resize(pos, (1, 2))[0], claw_movement=True)
@@ -81,7 +81,8 @@ class Robot(object):
         :param to: A two dimensional numpy.array
         :param claw_movement: Flag which indicates if the robot is positioning for to pick up an item
         '''
-        assert isinstance(array, to)
+        assert isinstance(to, ndarray)
+        #
         if self._hasDroppedItem:
             self._clearObstacle()
         v = to - self._position.at
@@ -118,7 +119,7 @@ class Robot(object):
         self._addCommand(Move(direction, cm))
 
     def pickUp(self, pos):
-        assert isinstance(pos, array)
+        assert isinstance(pos, ndarray)
         self.claw_to(8)
         a = int(round(pos.item(2) - self._ARM_OFFSET))
         if a < 0:
