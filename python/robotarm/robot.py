@@ -94,9 +94,10 @@ class Robot(object):
 
     def _clearObstacle(self):
         mag = -5
+        print 'POSITION {}  DIR {}'.format(self._position.at, self._position.direction)
         to = mag * self._position.direction
         pos = self._position.at + to
-        self._move(Robot.BACKWARD, mag)
+        self._move(Robot.BACKWARD, int(mag))
         self._setPosition(to, self._position.direction)
         self._hasDroppedItem = False
 
