@@ -58,4 +58,4 @@ class RobotSerial(Serial):
             response = _robotResponse.parse(super(RobotSerial, self).read())
             if response.success:
                 retry = False
-                sleep(2)
+		sleep(2)
